@@ -1,9 +1,9 @@
 package main
 
 import (
-	"app/internal/app"
+	"app/internal/composition"
 )
 
 func main() {
-	app.Run()
+	composition.Run()
 }
