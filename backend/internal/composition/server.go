@@ -28,6 +28,8 @@ func db_init() {
 		config.ENV().DBPassword,
 	)
 	cfg.SetDBName(viper.GetString("database.schema"))
+	cfg.SetEnsureDB(viper.GetBool("database.ensure"))
+	cfg.SetAutoMigrate(viper.GetBool("database.auto_migrate"))
 	db.NewDBProvider(cfg).Load()
 }
 

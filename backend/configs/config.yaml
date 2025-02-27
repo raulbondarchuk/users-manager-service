@@ -1,6 +1,8 @@
 database:
-  schema: "usersmanager"
-  
+  schema: "um_v3"
+  ensure: true
+  auto_migrate: true
+
 server:
   http:
     mode: "prod"

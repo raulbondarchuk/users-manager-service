@@ -9,12 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// Config — struct for storing the database configuration.
 type Config struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	DBName   string
+	Host        string
+	Port        int
+	User        string
+	Password    string
+	DBName      string
+	EnsureDB    bool // if true => execute CREATE DATABASE IF NOT EXISTS
+	AutoMigrate bool // if true => execute AutoMigrate
 }
 
 func (c *Config) Set(host string, port int, user, password string) {
@@ -24,8 +27,20 @@ func (c *Config) Set(host string, port int, user, password string) {
 	c.Password = password
 }
 
+// Method for setting the DBName field. Is the name of the schema to connect to.
 func (c *Config) SetDBName(dbname string) {
 	c.DBName = dbname
+}
+
+// Method for setting the EnsureDB flag.
+// If the flag is true, the database will be created if it does not exist.
+func (c *Config) SetEnsureDB(ensure bool) {
+	c.EnsureDB = ensure
+}
+
+// Method for setting the AutoMigrate flag. If the flag is true, the migrations will be executed.
+func (c *Config) SetAutoMigrate(autoMigrate bool) {
+	c.AutoMigrate = autoMigrate
 }
 
 type DBProvider struct {
@@ -34,7 +49,7 @@ type DBProvider struct {
 	mu     sync.Mutex // For thread safety during initialization
 }
 
-// NewDBProvider — constructor, which remembers the config (but does not open the connection immediately).
+// Constructor, which remembers the config (but does not open the connection immediately).
 func NewDBProvider(cfg Config) *DBProvider {
 	return &DBProvider{config: cfg}
 }
@@ -50,17 +65,38 @@ func (p *DBProvider) Load() error {
 		return nil
 	}
 
+	// 1. If needed, create database (EnsureDB)
+	if p.config.EnsureDB {
+		if err := p.EnsureDatabase(); err != nil {
+			return fmt.Errorf("error ensuring database: %w", err)
+		}
+	}
+
+	// 2. Connect to the database
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		p.config.User, p.config.Password, p.config.Host, p.config.Port, p.config.DBName,
+		p.config.User,
+		p.config.Password,
+		p.config.Host,
+		p.config.Port,
+		p.config.DBName,
 	)
-
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return err
 	}
-	log.Printf("✅ Successfully connected to database %s at %s:%d", p.config.DBName, p.config.Host, p.config.Port)
+
+	log.Printf("✅ Successfully connected to database %s at %s:%d",
+		p.config.DBName, p.config.Host, p.config.Port)
 	p.db = db
+
+	// 3. If needed, execute migration
+	if p.config.AutoMigrate {
+		if err := Migrate(p.db); err != nil {
+			return fmt.Errorf("migration error: %v", err)
+		}
+	}
+
 	return nil
 }
 
