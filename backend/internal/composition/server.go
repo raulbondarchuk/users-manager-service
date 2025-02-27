@@ -2,7 +2,7 @@ package composition
 
 import (
 	"app/internal/infrastructure/db"
-	"app/internal/infrastructure/transport/http"
+	http "app/internal/infrastructure/transport/http/server"
 	"app/pkg/config"
 
 	"github.com/spf13/viper"
