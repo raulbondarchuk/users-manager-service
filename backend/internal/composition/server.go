@@ -2,6 +2,7 @@ package composition
 
 import (
 	"app/internal/infrastructure/db"
+	"app/internal/infrastructure/transport/http"
 	"app/pkg/config"
 
 	"github.com/spf13/viper"
@@ -28,4 +29,8 @@ func db_init() {
 	)
 	cfg.SetDBName(viper.GetString("database.schema"))
 	db.NewDBProvider(cfg).Load()
+}
+
+func http_init() {
+	http.MustLoad()
 }

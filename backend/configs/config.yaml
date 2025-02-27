@@ -1,3 +1,8 @@
 database:
   schema: "usersmanager"
   
+server:
+  http:
+    mode: "prod"
+    port: 8080
+    timeout: "10s"
