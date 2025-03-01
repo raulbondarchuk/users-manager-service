@@ -8,3 +8,17 @@ server:
     mode: "prod"
     port: 8080
     timeout: "10s"
+
+webhooks:
+  verificaciones:
+    url: "https://verificaciones.liftel.es/clientes/api/v1"
+    token_cache_duration: "45m"
+    api:
+      login: "/login.php"
+      checkIfUserExists: "/tecnico.php?action=checktech"
+      getCompanyByICCID: "/iccid.php"
+      getCompanyByCompanyId: "/nomcliente.php"
+
+logger:
+  mode: "prod"
+

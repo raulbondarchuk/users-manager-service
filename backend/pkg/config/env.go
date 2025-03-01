@@ -10,10 +10,17 @@ import (
 
 // Config — struct, storing all needed environment variables
 type Config struct {
-	DBUser     string `env:"DB_USER,required"`
-	DBPassword string `env:"DB_PASSWORD,required"`
-	DBHost     string `env:"DB_HOST,required"`
-	DBPort     int    `env:"DB_PORT" envDefault:"3307"`
+
+	// DATABASE
+	DBUser     string `env:"DB_CLOUD_USER,required"`
+	DBPassword string `env:"DB_CLOUD_PASSWORD,required"`
+	DBHost     string `env:"DB_CLOUD_HOST,required"`
+	DBPort     int    `env:"DB_CLOUD_PORT" envDefault:"3307"`
+
+	// VERIFICACIONES
+	VERIFICACIONES_USERNAME string `env:"VERIFICACIONES_USERNAME,required"`
+	VERIFICACIONES_PASSWORD string `env:"VERIFICACIONES_PASSWORD,required"`
+
 	// More fields if needed ...
 }
 

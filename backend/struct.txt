@@ -38,3 +38,19 @@ my_project/
 └── proto/                                 // Храним файлы .proto для gRPC (IDL), затем генерим код.
     ├── user_service.proto                 // Описание gRPC-сервиса для User.
     └── (другие *.proto)                   // Если есть иные gRPC-сервисы, добавьте дополнительные .proto.
+
+
+
+Verificaciones
+
+internal/
+ ├── application/
+ │   └── ports/
+ │       └── verificaciones.go   // В нем интерфейс + DTO
+ └── infrastructure/
+     └── external/
+         └── verificaciones/
+             ├── service.go      // “верная” реализация
+             └── errors.go       // (опционально) коды ошибок
+             └── dto.go          // (опционально) внутренние структуры
+

@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -15,6 +14,11 @@ const (
 	DEV   = "dev"
 	TEST  = "test"
 	PROD  = "prod"
+)
+
+const (
+	INFO_LOGGER_INIT  = "Logger initialized"
+	WARN_INVALID_MODE = "Invalid logger mode, using default log level."
 )
 
 const (
@@ -43,7 +47,8 @@ type Logger struct {
 // Initialize creates and sets up the global logger instance
 func MustLoad() {
 	once.Do(func() {
-		mode := strings.ToLower(viper.GetString("app.mode"))
+		invalidMode := false
+		mode := strings.ToLower(viper.GetString("logger.mode"))
 		var logLevel string
 
 		switch mode {
@@ -52,18 +57,24 @@ func MustLoad() {
 		case PROD:
 			logLevel = INFO
 		default:
-			log.Printf("Invalid app mode '%s', using default log level: %s", mode, DEBUG)
+
+			invalidMode = true
 			logLevel = DEBUG
 		}
 		instance = New(logLevel)
-		log.Printf("[START] [PKG] [LOGGER] Logger initialized with level: %s", logLevel)
+
+		if invalidMode {
+			instance.Warn(WARN_INVALID_MODE, map[string]interface{}{"logger_level": logLevel})
+		}
+		instance.Info(INFO_LOGGER_INIT, map[string]interface{}{"logger_level": logLevel})
+
 	})
 }
 
 // GetLogger returns the global logger instance
 func GetLogger() *Logger {
 	if instance == nil {
-		log.Fatalf("Logger not initialized. Call Initialize() first.")
+		MustLoad()
 	}
 	return instance
 }
