@@ -53,7 +53,7 @@ func Migrate(db *gorm.DB, creationDefaults bool) error {
 	if err := db.AutoMigrate(
 		&models.ProviderModel{},
 		&models.UserModel{},
-		// &models.ProfileModel{},
+		&models.ProfileModel{},
 		// &models.SubUserModel{},
 	); err != nil {
 		return fmt.Errorf("autoMigrate error: %w", err)

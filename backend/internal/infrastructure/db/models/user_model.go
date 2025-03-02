@@ -35,6 +35,7 @@ type UserModel struct {
 
 	// GORM will load the Provider automatically
 	Provider ProviderModel `gorm:"foreignKey:ProviderID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
+	Profile  *ProfileModel `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
 func (UserModel) TableName() string { return "users" }
@@ -72,11 +73,34 @@ func (u *UserModel) BeforeSave(tx *gorm.DB) (err error) {
 	return nil
 }
 
+// AfterCreate is called after creating UserModel
+func (u *UserModel) AfterCreate(tx *gorm.DB) (err error) {
+	// Determine if the profile is primary and set the role if needed
+	isPrimary := u.OwnerID == 0
+	var role *string
+	if isPrimary {
+		defaultRole := "company"
+		role = &defaultRole
+	}
+
+	// Create a profile
+	prof := ProfileModel{
+		UserID:    u.ID,
+		IsPrimary: isPrimary,
+		Role:      role,
+	}
+
+	if err := tx.Create(&prof).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // ---- Mapping: model <-> domain entity ----
 
 // ToDomain converts UserModel to domain entity user.User
 func (um *UserModel) ToDomain() *user.User {
-	return &user.User{
+	domainUser := user.User{
 		ID:           um.ID,
 		UUID:         um.UUID,
 		Login:        um.Login,
@@ -93,6 +117,14 @@ func (um *UserModel) ToDomain() *user.User {
 		RefreshExp:   um.RefreshExp,
 		OwnerID:      um.OwnerID,
 	}
+
+	// If UserModel has a profile (Preload("Profile") loaded it),
+	// then convert it to domain.Profile
+	if um.Profile != nil {
+		domainUser.Profile = um.Profile.ToDomain()
+	}
+
+	return &domainUser
 }
 
 // hashPasswordIfNeeded hashes the password if it's not already hashed
