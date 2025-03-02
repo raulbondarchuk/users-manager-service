@@ -3,6 +3,7 @@ database:
   host: "164.132.223.56"
   port: 3307
   schema: "um_v3"
+  custom_logger: true
   ensure: true
   auto_migrate: true
 
@@ -31,7 +32,7 @@ server:
 webhooks:
   verificaciones:
     url: "https://verificaciones.liftel.es/clientes/api/v1"
-    token_cache_duration: "45m"
+    token_cache_duration: "55m"
     api:
       login: "/login.php"
       checkIfUserExists: "/tecnico.php?action=checktech"

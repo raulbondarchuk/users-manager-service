@@ -6,6 +6,7 @@ import (
 
 	"app/internal/application/ports"
 	"app/internal/domain/user"
+	"app/internal/infrastructure/token/paseto"
 	"app/internal/infrastructure/token/refresh"
 )
 
@@ -55,7 +56,7 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 				CompanyName:  resp.Empresa,
 				Active:       true,
 				IsLogged:     true,
-				Password:     nil, // не храним пароль
+				Password:     nil, // do not store password
 			}
 			newUser.LastAccess = time.Now().Format("2006-01-02 15:04:05")
 
@@ -101,5 +102,17 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 		return nil, fmt.Errorf("update user (refresh) error: %w", err)
 	}
 
+	// 6. Generate access-token
+	accessToken, _, err := paseto.Paseto().GenerateToken(paseto.PasetoClaims{
+		Username:    usr.Login,
+		CompanyID:   int(usr.CompanyID),
+		CompanyName: usr.CompanyName,
+		Roles:       "---",
+		IsPrimary:   usr.Profile.IsPrimary,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("access token generation error: %w", err)
+	}
+	usr.AccessToken = accessToken
 	return usr, nil
 }

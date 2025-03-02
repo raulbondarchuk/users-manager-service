@@ -30,6 +30,7 @@ func db_init() {
 	cfg.SetEnsureDB(viper.GetBool("database.ensure"))
 	cfg.SetAutoMigrate(viper.GetBool("database.auto_migrate"))
 	cfg.SetCreationDefaults(viper.GetBool("database.migrations.creation_defaults"))
+	cfg.SetCustomLogger(viper.GetBool("database.custom_logger"))
 	db.Initialize(cfg)
 }
 

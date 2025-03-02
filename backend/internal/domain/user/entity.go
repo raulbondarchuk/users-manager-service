@@ -17,11 +17,14 @@ type User struct {
 	IsLogged     bool    `json:"isLogged"`
 	CreatedAt    string  `json:"createdAt"`
 	LastAccess   string  `json:"lastAccess"`
-	Refresh      *string `json:"refresh"`
-	RefreshExp   string  `json:"refreshExp"`
-	OwnerID      *uint   `json:"ownerId"`
+
+	Refresh    *string `json:"refresh"`
+	RefreshExp string  `json:"refreshExp"`
+	OwnerID    *uint   `json:"ownerId"`
 
 	Profile *Profile `json:"profile"`
+
+	AccessToken string `json:"-"`
 }
 
 // Setter for password (hashing)
