@@ -1,7 +1,7 @@
 package db
 
 import (
-	"app/internal/domain/provider"
+	"app/internal/infrastructure/db/models"
 	"fmt"
 	"log"
 
@@ -51,10 +51,10 @@ func (p *DBProvider) EnsureDatabase() error {
 func Migrate(db *gorm.DB, creationDefaults bool) error {
 	// 1. Execute AutoMigrate for needed entities
 	if err := db.AutoMigrate(
-		// &user.User{},
-		// &user.Profile{},
-		// &subuser.SubUser{},
-		&provider.Provider{},
+		&models.ProviderModel{},
+		&models.UserModel{},
+		// &models.ProfileModel{},
+		// &models.SubUserModel{},
 	); err != nil {
 		return fmt.Errorf("autoMigrate error: %w", err)
 	}

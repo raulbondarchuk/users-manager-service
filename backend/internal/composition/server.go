@@ -13,7 +13,6 @@ const (
 )
 
 // Helper functions for starting HTTP and gRPC servers, configs and database.
-// Вспомогательные функции для запуска HTTP и gRPC серверов, конфигураций и базы данных.
 
 func config_init() {
 	config.INIT(YAML_PATH)
@@ -31,7 +30,7 @@ func db_init() {
 	cfg.SetEnsureDB(viper.GetBool("database.ensure"))
 	cfg.SetAutoMigrate(viper.GetBool("database.auto_migrate"))
 	cfg.SetCreationDefaults(viper.GetBool("database.migrations.creation_defaults"))
-	db.NewDBProvider(cfg).Load()
+	db.Initialize(cfg)
 }
 
 func http_init() {

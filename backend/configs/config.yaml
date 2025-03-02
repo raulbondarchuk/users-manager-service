@@ -9,6 +9,9 @@ database:
   migrations:
     creation_defaults: true
     defaults:
+      user:
+          id: 1
+          # Other field of user are in .env file
       provider:
         id: 1
         name: "Liftel"
@@ -17,7 +20,7 @@ database:
 server:
   http:
     mode: "prod"
-    port: 3133
+    port: 8133
     timeout: "10s"
 
 webhooks:

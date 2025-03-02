@@ -15,8 +15,8 @@ var (
 	once     sync.Once
 )
 
-// GetInstance — ленивая инициализация (singleton)
-// При первом обращении вызывает HTTP() и возвращает *gin.Engine
+// GetInstance — lazy initialization (singleton)
+// On first call, it calls HTTP() and returns *gin.Engine
 func GetInstance() *gin.Engine {
 	once.Do(func() {
 		HTTP()
@@ -24,9 +24,9 @@ func GetInstance() *gin.Engine {
 	return instance
 }
 
-// MustLoad — запускает HTTP-сервер в отдельной горутине
+// MustLoad — starts HTTP-server in a separate goroutine
 func MustLoad() {
-	router := GetInstance() // вызываем GetInstance() => создаёт/получает instance
+	router := GetInstance() // call GetInstance() => creates/gets instance
 	port := viper.GetInt("server.http.port")
 
 	go func() {
@@ -38,8 +38,8 @@ func MustLoad() {
 	}()
 }
 
-// HTTP — инициализация объекта *gin.Engine (CORS, middleware, маршруты)
-// Вызывается один раз (через once.Do).
+// HTTP — initialization of the *gin.Engine object (CORS, middleware, routes)
+// Called once (through once.Do).
 func HTTP() {
 	setMode()
 	instance = gin.Default()

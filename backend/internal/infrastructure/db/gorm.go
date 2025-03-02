@@ -55,6 +55,31 @@ type DBProvider struct {
 	mu     sync.Mutex // For thread safety during initialization
 }
 
+var (
+	globalProvider *DBProvider
+	once           sync.Once
+)
+
+// Initialize creates and saves the provider in the global variable
+func Initialize(cfg Config) {
+	var initErr error
+	once.Do(func() {
+		globalProvider = NewDBProvider(cfg)
+		initErr = globalProvider.Load()
+		if initErr != nil {
+			log.Fatal(initErr)
+		}
+	})
+}
+
+// GetProvider returns the global provider
+func GetProvider() *DBProvider {
+	if globalProvider == nil {
+		log.Fatal("Database provider not initialized. Call Initialize() first")
+	}
+	return globalProvider
+}
+
 // Constructor, which remembers the config (but does not open the connection immediately).
 func NewDBProvider(cfg Config) *DBProvider {
 	return &DBProvider{config: cfg}
@@ -107,10 +132,9 @@ func (p *DBProvider) Load() error {
 }
 
 // GetDB — method for returning the already initialized *gorm.DB
-func (p *DBProvider) Get() *gorm.DB {
+func (p *DBProvider) GetDB() *gorm.DB {
 	if p.db == nil {
 		p.Load()
 	}
 	return p.db
-
 }

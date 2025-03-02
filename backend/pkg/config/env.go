@@ -19,6 +19,10 @@ type Config struct {
 	VERIFICACIONES_USERNAME string `env:"VERIFICACIONES_USERNAME,required"`
 	VERIFICACIONES_PASSWORD string `env:"VERIFICACIONES_PASSWORD,required"`
 
+	// DEFAULT USER
+	DEFAULT_USER_LOGIN    string `env:"DEFAULT_USER_LOGIN,required"`
+	DEFAULT_USER_PASSWORD string `env:"DEFAULT_USER_PASSWORD,required"`
+
 	// More fields if needed ...
 }
 

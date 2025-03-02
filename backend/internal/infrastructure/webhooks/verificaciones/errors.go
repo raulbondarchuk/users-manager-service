@@ -12,7 +12,7 @@ type ErrorDef struct {
 	Message string
 }
 
-// Ваши ErrorDef:
+// Our ErrorDef:
 var (
 	// Static errors
 	ErrRequestFailed           = ErrorDef{Code: 3000, Message: "request failed"}
