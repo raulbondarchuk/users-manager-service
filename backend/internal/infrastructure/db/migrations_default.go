@@ -30,16 +30,27 @@ func init_Provider(db *gorm.DB) error {
 		return err
 	}
 	if count == 0 {
-		// Create default provider
-		defaultProvider := models.ProviderModel{
-			ID:   uint(viper.GetInt("database.migrations.defaults.provider.id")),
-			Name: viper.GetString("database.migrations.defaults.provider.name"),
-			Desc: viper.GetString("database.migrations.defaults.provider.desc"),
+		// Create default provider Liftel
+		defaultProviderLiftel := models.ProviderModel{
+			ID:   uint(viper.GetInt("database.migrations.defaults.provider.liftel.id")),
+			Name: viper.GetString("database.migrations.defaults.provider.liftel.name"),
+			Desc: viper.GetString("database.migrations.defaults.provider.liftel.desc"),
 		}
-		if err := db.Create(&defaultProvider).Error; err != nil {
+		if err := db.Create(&defaultProviderLiftel).Error; err != nil {
 			return err
 		}
-		log.Printf("Created default provider: %s with ID: %d", defaultProvider.Name, defaultProvider.ID)
+		log.Printf("Created default provider: %s with ID: %d", defaultProviderLiftel.Name, defaultProviderLiftel.ID)
+
+		// Create default provider Verificaciones
+		defaultProviderVerificaciones := models.ProviderModel{
+			ID:   uint(viper.GetInt("database.migrations.defaults.provider.verificaciones.id")),
+			Name: viper.GetString("database.migrations.defaults.provider.verificaciones.name"),
+			Desc: viper.GetString("database.migrations.defaults.provider.verificaciones.desc"),
+		}
+		if err := db.Create(&defaultProviderVerificaciones).Error; err != nil {
+			return err
+		}
+		log.Printf("Created default provider: %s with ID: %d", defaultProviderVerificaciones.Name, defaultProviderVerificaciones.ID)
 	}
 
 	return nil
@@ -57,7 +68,7 @@ func init_User(db *gorm.DB) error {
 		defaultUser := models.UserModel{
 			ID:       uint(viper.GetInt("database.migrations.defaults.user.id")),
 			Login:    config.ENV().DEFAULT_USER_LOGIN,
-			Password: config.ENV().DEFAULT_USER_PASSWORD,
+			Password: &config.ENV().DEFAULT_USER_PASSWORD,
 		}
 		if err := db.Create(&defaultUser).Error; err != nil {
 			return err

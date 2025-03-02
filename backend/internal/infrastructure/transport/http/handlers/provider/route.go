@@ -1,4 +1,4 @@
-package handlers
+package provider
 
 import (
 	"app/internal/application"

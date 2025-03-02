@@ -23,6 +23,11 @@ type Config struct {
 	DEFAULT_USER_LOGIN    string `env:"DEFAULT_USER_LOGIN,required"`
 	DEFAULT_USER_PASSWORD string `env:"DEFAULT_USER_PASSWORD,required"`
 
+	// PASETO + REFRESH
+	PASETO_SK               string `env:"PASETO_SK,required"`
+	PASETO_EXPIRATION_TIME  string `env:"PASETO_EXPIRATION_TIME,required"`
+	REFRESH_EXPIRATION_TIME string `env:"REFRESH_EXPIRATION_TIME,required"`
+
 	// More fields if needed ...
 }
 
