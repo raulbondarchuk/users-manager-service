@@ -7,10 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ProviderRoutes(router *gin.Engine) {
-	repo := repositories.NewProviderRepository()
-	usecase := application.NewProviderUseCase(repo)
-	handler := NewProviderHandler(usecase)
+func Routes(router *gin.Engine) {
+	// repo := repositories.NewProviderRepository()
+	// usecase := application.NewProviderUseCase(repo)
+	// handler := NewProviderHandler(usecase)
+	handler := NewProviderHandler(application.NewProviderUseCase(repositories.NewProviderRepository()))
 
 	// // Routes
 	group := router.Group("/providers")
