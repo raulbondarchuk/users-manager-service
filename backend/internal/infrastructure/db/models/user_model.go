@@ -76,7 +76,6 @@ func (u *UserModel) BeforeSave(tx *gorm.DB) (err error) {
 		u.UUID = uuid.New().String()
 	}
 	u.LastAccess = time.Now().Format("2006-01-02 15:04:05")
-	u.RefreshExp = time.Now().Format("2006-01-02 15:04:05")
 
 	// Hash password if needed
 	if err := u.hashPasswordIfNeeded(); err != nil {

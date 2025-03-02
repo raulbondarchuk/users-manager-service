@@ -6,6 +6,7 @@ import (
 
 	"app/internal/application/ports"
 	"app/internal/domain/user"
+	"app/internal/infrastructure/token/refresh"
 )
 
 type AuthUseCase struct {
@@ -20,23 +21,19 @@ func NewAuthUseCase(userRepo user.Repository, verSvc ports.VerificacionesService
 	}
 }
 
-// Login выполняет логику /login
 func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	// 1. Try to find user by login
 	usr, err := uc.userRepo.GetByLogin(login)
 	if err != nil {
-		// Assume if gorm.ErrRecordNotFound => create new
-		// or handle error. Assume usr = nil
-		// If error != not found, return err
 		if !uc.userRepo.IsNotFoundError(err) {
+			// another error
 			return nil, fmt.Errorf("repo error: %w", err)
 		}
 		usr = nil
 	}
 
-	// 2. If user NOT found OR user.ProviderID = 2 => check verificaciones
+	// 2. If user NOT found OR user.ProviderID=2 => check external service
 	if usr == nil || usr.ProviderID == 2 {
-		// Call external verificaciones service
 		resp, status, err := uc.verSvc.Login(ports.LoginReq{
 			Username: login,
 			Password: password,
@@ -49,51 +46,60 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 		}
 
 		if usr == nil {
-			// User does not exist, create new
+			// Create new user
 			newUser := &user.User{
-				Login:       login,
-				ProviderID:  2, // "verificaciones"
-				CompanyID:   uint(resp.IdEmpresa),
-				CompanyName: resp.Empresa,
-				Active:      true,
-				IsLogged:    true,
-				// Password not stored (or empty string)
-				Password: nil,
+				Login:        login,
+				ProviderID:   2,
+				ProviderName: "Verificaciones",
+				CompanyID:    uint(resp.IdEmpresa),
+				CompanyName:  resp.Empresa,
+				Active:       true,
+				IsLogged:     true,
+				Password:     nil, // не храним пароль
 			}
 			newUser.LastAccess = time.Now().Format("2006-01-02 15:04:05")
 
 			if err := uc.userRepo.Create(newUser); err != nil {
 				return nil, fmt.Errorf("create user error: %w", err)
 			}
-
-			// Get new user
+			// After creation, get user from DB again
 			usr, err = uc.userRepo.GetByLogin(login)
 			if err != nil {
 				return nil, fmt.Errorf("get user error: %w", err)
 			}
-
-			return usr, nil
 		} else {
-			// user already exists, just update lastAccess
+			// user already exists
 			usr.LastAccess = time.Now().Format("2006-01-02 15:04:05")
 			usr.IsLogged = true
 			if err := uc.userRepo.Update(usr); err != nil {
 				return nil, fmt.Errorf("update user error: %w", err)
 			}
-			return usr, nil
+		}
+	} else {
+		// 3. If user found + ProviderID=1 => local password check
+		if !usr.CheckPassword(password) {
+			return nil, fmt.Errorf("invalid password")
+		}
+		usr.LastAccess = time.Now().Format("2006-01-02 15:04:05")
+		usr.IsLogged = true
+		if err := uc.userRepo.Update(usr); err != nil {
+			return nil, fmt.Errorf("update user error: %w", err)
 		}
 	}
 
-	// 3. Otherwise, user found and ProviderID=1 => check local password
-	if !usr.CheckPassword(password) {
-		return nil, fmt.Errorf("invalid password")
+	// At this point, usr is definitely not nil and is authorized
+	// 4. Generate refresh-token + expDate
+	token, expDate, err := refresh.GenerateRefreshToken()
+	if err != nil {
+		return nil, fmt.Errorf("refresh token generation error: %w", err)
+	}
+	usr.Refresh = &token
+	usr.RefreshExp = expDate
+
+	// 5. Save refresh-token in DB
+	if err := uc.userRepo.Update(usr); err != nil {
+		return nil, fmt.Errorf("update user (refresh) error: %w", err)
 	}
 
-	// Password is ok, update lastAccess
-	usr.LastAccess = time.Now().Format("2006-01-02 15:04:05")
-	usr.IsLogged = true
-	if err := uc.userRepo.Update(usr); err != nil {
-		return nil, fmt.Errorf("update user error: %w", err)
-	}
 	return usr, nil
 }
