@@ -17,7 +17,7 @@ type User struct {
 	IsLogged     bool
 	CreatedAt    string
 	LastAccess   string
-	Refresh      string
+	Refresh      *string
 	RefreshExp   string
 	OwnerID      uint
 }

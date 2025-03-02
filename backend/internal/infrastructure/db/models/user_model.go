@@ -26,12 +26,12 @@ type UserModel struct {
 	ProviderID   uint   `gorm:"column:providerId;not null;default:1"`
 	ProviderName string `gorm:"column:providerName;size:255;not null;default:'Liftel'"`
 
-	Active     bool   `gorm:"column:active;default:true"`
-	CreatedAt  string `gorm:"column:createdAt;type:datetime"`
-	LastAccess string `gorm:"column:lastAccess;type:DATETIME"`
-	Refresh    string `gorm:"column:refresh;size:255,default:null"` // Refresh token
-	RefreshExp string `gorm:"column:refreshExp;type:DATETIME"`      // Refresh token expiration date
-	IsLogged   bool   `gorm:"column:isLogged;default:false"`
+	Active     bool    `gorm:"column:active;default:true"`
+	CreatedAt  string  `gorm:"column:createdAt;type:datetime"`
+	LastAccess string  `gorm:"column:lastAccess;type:DATETIME"`
+	Refresh    *string `gorm:"column:refresh;size:255,default:null"` // Refresh token
+	RefreshExp string  `gorm:"column:refreshExp;type:DATETIME"`      // Refresh token expiration date
+	IsLogged   bool    `gorm:"column:isLogged;default:false"`
 
 	// GORM will load the Provider automatically
 	Provider ProviderModel `gorm:"foreignKey:ProviderID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
