@@ -8,7 +8,7 @@ type User struct {
 	ID           uint    `json:"id"`
 	UUID         string  `json:"uuid"`
 	Login        string  `json:"login"`
-	Password     string  `json:"password"`
+	Password     *string `json:"-"`
 	CompanyID    uint    `json:"companyId"`
 	CompanyName  string  `json:"companyName"`
 	ProviderID   uint    `json:"providerId"`
@@ -19,7 +19,7 @@ type User struct {
 	LastAccess   string  `json:"lastAccess"`
 	Refresh      *string `json:"refresh"`
 	RefreshExp   string  `json:"refreshExp"`
-	OwnerID      uint    `json:"ownerId"`
+	OwnerID      *uint   `json:"ownerId"`
 
 	Profile *Profile `json:"profile"`
 }
@@ -30,13 +30,17 @@ func (u *User) SetPassword(plain string) error {
 	if err != nil {
 		return err
 	}
-	u.Password = string(hashed)
+	hashedStr := string(hashed)
+	u.Password = &hashedStr
 	return nil
 }
 
 // Check password
 func (u *User) CheckPassword(plain string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(plain))
+	if u.Password == nil {
+		return false
+	}
+	err := bcrypt.CompareHashAndPassword([]byte(*u.Password), []byte(plain))
 	return err == nil
 }
 
