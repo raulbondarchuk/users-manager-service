@@ -43,7 +43,7 @@ func TimeoutMiddleware(timeoutString string) gin.HandlerFunc {
 
 func printRoutes(router *gin.Engine) {
 	routes := router.Routes()
-
+	routesPrint := ""
 	// Create a map to group routes by prefix
 	groupedRoutes := make(map[string][]gin.RouteInfo)
 
@@ -53,8 +53,8 @@ func printRoutes(router *gin.Engine) {
 		groupedRoutes[prefix] = append(groupedRoutes[prefix], route)
 	}
 
-	fmt.Println("Registered routes:")
-	fmt.Println("------------------")
+	routesPrint += "Registered routes:\n"
+	routesPrint += "------------------\n"
 
 	// Get all prefixes and sort them
 	var prefixes []string
@@ -65,14 +65,15 @@ func printRoutes(router *gin.Engine) {
 
 	// Print routes by groups
 	for _, prefix := range prefixes {
-		fmt.Printf("\n[%s]\n", strings.ToUpper(prefix))
+		routesPrint += fmt.Sprintf("\n[%s]\n", strings.ToUpper(prefix))
 		for _, route := range groupedRoutes[prefix] {
 			parts := strings.Split(route.Handler, "/")
 			handler := parts[len(parts)-1]
-			fmt.Printf("%-6s  %-25s | Handler: %v\n", route.Method, route.Path, handler)
+			routesPrint += fmt.Sprintf("%-6s  %-25s | Handler: %v\n", route.Method, route.Path, handler)
 		}
 	}
-	fmt.Println("\n------------------")
+	routesPrint += "\n------------------\n"
+	fmt.Println(routesPrint)
 }
 
 func RouteLogger() gin.HandlerFunc {

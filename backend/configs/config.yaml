@@ -1,12 +1,23 @@
 database:
+  # host: "10.70.20.50"
+  host: "164.132.223.56"
+  port: 3307
   schema: "um_v3"
   ensure: true
   auto_migrate: true
 
+  migrations:
+    creation_defaults: true
+    defaults:
+      provider:
+        id: 1
+        name: "Liftel"
+        desc: "Default provider"
+
 server:
   http:
     mode: "prod"
-    port: 8080
+    port: 3133
     timeout: "10s"
 
 webhooks:

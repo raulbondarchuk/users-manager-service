@@ -11,13 +11,14 @@ import (
 
 // Config — struct for storing the database configuration.
 type Config struct {
-	Host        string
-	Port        int
-	User        string
-	Password    string
-	DBName      string
-	EnsureDB    bool // if true => execute CREATE DATABASE IF NOT EXISTS
-	AutoMigrate bool // if true => execute AutoMigrate
+	Host             string
+	Port             int
+	User             string
+	Password         string
+	DBName           string
+	EnsureDB         bool // if true => execute CREATE DATABASE IF NOT EXISTS
+	AutoMigrate      bool // if true => execute AutoMigrate
+	CreationDefaults bool // if true => execute creation of default entities
 }
 
 func (c *Config) Set(host string, port int, user, password string) {
@@ -41,6 +42,11 @@ func (c *Config) SetEnsureDB(ensure bool) {
 // Method for setting the AutoMigrate flag. If the flag is true, the migrations will be executed.
 func (c *Config) SetAutoMigrate(autoMigrate bool) {
 	c.AutoMigrate = autoMigrate
+}
+
+// Method for setting the CreationDefaults flag. If the flag is true, the creation of default entities will be executed.
+func (c *Config) SetCreationDefaults(creationDefaults bool) {
+	c.CreationDefaults = creationDefaults
 }
 
 type DBProvider struct {
@@ -92,7 +98,7 @@ func (p *DBProvider) Load() error {
 
 	// 3. If needed, execute migration
 	if p.config.AutoMigrate {
-		if err := Migrate(p.db); err != nil {
+		if err := Migrate(p.db, p.config.CreationDefaults); err != nil {
 			return fmt.Errorf("migration error: %v", err)
 		}
 	}
@@ -107,13 +113,4 @@ func (p *DBProvider) Get() *gorm.DB {
 	}
 	return p.db
 
-}
-
-func Migrate(db *gorm.DB) error {
-	// return db.AutoMigrate(
-	// 	&user.User{},
-	// 	&user.Profile{},
-	// 	&subuser.SubUser{},
-	// )
-	return nil
 }

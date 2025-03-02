@@ -12,10 +12,8 @@ import (
 type Config struct {
 
 	// DATABASE
-	DBUser     string `env:"DB_CLOUD_USER,required"`
-	DBPassword string `env:"DB_CLOUD_PASSWORD,required"`
-	DBHost     string `env:"DB_CLOUD_HOST,required"`
-	DBPort     int    `env:"DB_CLOUD_PORT" envDefault:"3307"`
+	DBUser     string `env:"DB_USER,required"`
+	DBPassword string `env:"DB_PASSWORD,required"`
 
 	// VERIFICACIONES
 	VERIFICACIONES_USERNAME string `env:"VERIFICACIONES_USERNAME,required"`

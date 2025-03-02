@@ -1,6 +1,7 @@
 package db
 
 import (
+	"app/internal/domain/provider"
 	"fmt"
 	"log"
 
@@ -44,5 +45,27 @@ func (p *DBProvider) EnsureDatabase() error {
 	}
 
 	log.Printf("✅ Database '%s' was created (it did not exist).", dbName)
+	return nil
+}
+
+func Migrate(db *gorm.DB, creationDefaults bool) error {
+	// 1. Execute AutoMigrate for needed entities
+	if err := db.AutoMigrate(
+		// &user.User{},
+		// &user.Profile{},
+		// &subuser.SubUser{},
+		&provider.Provider{},
+	); err != nil {
+		return fmt.Errorf("autoMigrate error: %w", err)
+	}
+
+	// 2. (Optional) initialize default data, if you want
+	if creationDefaults {
+		if err := init_default_data(db); err != nil {
+			return err
+		}
+	}
+
+	log.Println("✅ Migration completed successfully.")
 	return nil
 }

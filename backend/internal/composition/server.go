@@ -22,14 +22,15 @@ func config_init() {
 func db_init() {
 	cfg := db.Config{}
 	cfg.Set(
-		config.ENV().DBHost,
-		config.ENV().DBPort,
+		viper.GetString("database.host"),
+		viper.GetInt("database.port"),
 		config.ENV().DBUser,
 		config.ENV().DBPassword,
 	)
 	cfg.SetDBName(viper.GetString("database.schema"))
 	cfg.SetEnsureDB(viper.GetBool("database.ensure"))
 	cfg.SetAutoMigrate(viper.GetBool("database.auto_migrate"))
+	cfg.SetCreationDefaults(viper.GetBool("database.migrations.creation_defaults"))
 	db.NewDBProvider(cfg).Load()
 }
 
