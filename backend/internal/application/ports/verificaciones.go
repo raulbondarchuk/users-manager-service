@@ -22,6 +22,7 @@ type LoginRes struct {
 	Token       string `json:"token"`
 	Ce          int    `json:"ce"`
 	AppToken    string `json:"apptoken"`
+	Puerto      string `json:"puerto"`
 }
 
 type Company struct {
