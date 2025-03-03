@@ -6,4 +6,5 @@ type RoleRepository interface {
 	AssignRoleToUser(userID, roleID uint) error
 	GetUserRoles(userID uint) ([]Role, error)
 	CreateRole(role *Role) (uint, error)
+	RemoveRoleFromUser(userID, roleID uint) error
 }

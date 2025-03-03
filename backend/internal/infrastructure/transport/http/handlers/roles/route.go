@@ -19,6 +19,6 @@ func Routes(router *gin.Engine) {
 		group.GET("/by-username", handler.GetRolesByUsername) // Get roles by username
 
 		group.POST("assign", handler.AssignRolesToUser) // Assign roles to user
-		// group.DELETE("", handler.RemoveRoleFromUser) // Remove role from user
+		group.POST("remove", handler.RemoveRolesOfUser) // Remove roles from user
 	}
 }

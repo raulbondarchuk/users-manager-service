@@ -80,3 +80,8 @@ func (r *roleRepository) GetUserRoles(userID uint) ([]role.Role, error) {
 	}
 	return roles, nil
 }
+
+// RemoveRoleFromUser - remove role from user
+func (r *roleRepository) RemoveRoleFromUser(userID, roleID uint) error {
+	return r.db.Where("user_id = ? AND role_id = ?", userID, roleID).Delete(&models.RefRoleUserModel{}).Error
+}

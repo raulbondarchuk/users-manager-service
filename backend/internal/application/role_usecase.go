@@ -116,3 +116,50 @@ func (uc *RoleUseCase) AssignRolesToUser(username string, roleNames string) erro
 
 	return nil
 }
+
+// EliminateRolesOfUser - remove roles from user by username
+func (uc *RoleUseCase) EliminateRolesOfUser(username string, roleNames string) error {
+	// 1. Get user by username
+	usr, err := uc.userRepo.GetByLogin(username)
+	if err != nil {
+		if uc.userRepo.IsNotFoundError(err) {
+			return fmt.Errorf("user not found: %s", username)
+		}
+		return fmt.Errorf("error retrieving user: %w", err)
+	}
+
+	// 2. Get existing user roles
+	existingRoles, err := uc.roleRepo.GetUserRoles(usr.ID)
+	if err != nil {
+		return fmt.Errorf("error getting user roles: %w", err)
+	}
+
+	// Create a map for quick lookup of existing roles
+	existingRoleMap := make(map[string]uint)
+	for _, r := range existingRoles {
+		existingRoleMap[r.Role] = r.ID
+	}
+
+	// 3. Process each role name from the input
+	roleNamesSlice := strings.Split(roleNames, ",")
+	for _, roleName := range roleNamesSlice {
+		roleName = strings.TrimSpace(roleName)
+		if roleName == "" {
+			continue
+		}
+
+		// Check if user has this role
+		roleID, hasRole := existingRoleMap[roleName]
+		if !hasRole {
+			// User doesn't have this role, skip
+			continue
+		}
+
+		// Remove role from user
+		if err := uc.roleRepo.RemoveRoleFromUser(usr.ID, roleID); err != nil {
+			return fmt.Errorf("error removing role %s from user: %w", roleName, err)
+		}
+	}
+
+	return nil
+}
