@@ -36,7 +36,7 @@ func (r *userRepository) GetByID(id uint) (*user.User, error) {
 
 func (r *userRepository) GetByLogin(login string) (*user.User, error) {
 	var um models.UserModel
-	err := r.db.Preload("Profile").
+	err := r.db.Preload("Profile").Preload("Roles").
 		Where("login = ?", login).
 		First(&um).Error
 	if err != nil {

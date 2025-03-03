@@ -9,8 +9,12 @@ import (
 )
 
 func Routes(router *gin.Engine) {
-	handler := NewAuthHandler(application.NewAuthUseCase(repositories.NewUserRepository(), verificaciones.NewVerificacionesClient()))
-	// // Routes
+	handler := NewAuthHandler(
+		application.NewAuthUseCase(repositories.NewUserRepository(),
+			verificaciones.NewVerificacionesClient(),
+			repositories.NewRoleRepository()))
+
+	// Routes
 	group := router.Group("/auth")
 	{
 		// // Get all providers
