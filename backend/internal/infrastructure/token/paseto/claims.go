@@ -7,18 +7,16 @@ import (
 	"time"
 )
 
-// TODO: add username of primary user, if it is not empty
-
 // PasetoClaims — typed fields that you want to store in the token.
 type PasetoClaims struct {
-	Username    string `json:"username"`
-	CompanyID   int    `json:"companyId"`
-	CompanyName string `json:"companyName"`
-	Roles       string `json:"roles"`
-	IsPrimary   bool   `json:"isPrimary"`
-
-	IssuedAt  time.Time `json:"iat"`
-	ExpiresAt time.Time `json:"exp"`
+	Username      string    `json:"username"`
+	CompanyID     int       `json:"companyId"`
+	CompanyName   string    `json:"companyName"`
+	Roles         string    `json:"roles"`
+	IsPrimary     bool      `json:"isPrimary"`
+	OwnerUsername string    `json:"ownerUsername"`
+	IssuedAt      time.Time `json:"iat"`
+	ExpiresAt     time.Time `json:"exp"`
 }
 
 func capitalizeKey(key string) string {

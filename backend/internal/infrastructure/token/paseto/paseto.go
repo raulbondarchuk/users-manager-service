@@ -68,6 +68,10 @@ func (p *PasetoManager) GenerateToken(claims PasetoClaims) (string, *PasetoClaim
 	jsonToken.Set("roles", claims.Roles)
 	jsonToken.Set("isPrimary", strconv.FormatBool(claims.IsPrimary))
 
+	if claims.OwnerUsername != "" {
+		jsonToken.Set("ownerUsername", claims.OwnerUsername)
+	}
+
 	// Form the key (symmetricKey)
 	key := sha256.Sum256([]byte(p.baseKey))
 	symmetricKey := key[:]
@@ -119,6 +123,10 @@ func (p *PasetoManager) validateTokenInternal(tokenStr string, checkExpiration b
 		Username:  jsonToken.Subject,
 		IssuedAt:  jsonToken.IssuedAt,
 		ExpiresAt: jsonToken.Expiration,
+	}
+
+	if ownerUsername := jsonToken.Get("ownerUsername"); ownerUsername != "" {
+		claims.OwnerUsername = ownerUsername
 	}
 
 	// Get other fields

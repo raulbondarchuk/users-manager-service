@@ -24,7 +24,8 @@ type User struct {
 
 	Profile *Profile `json:"profile"`
 
-	AccessToken string `json:"-"`
+	AccessToken   string `json:"-"`
+	OwnerUsername string `json:"-"`
 }
 
 // Setter for password (hashing)

@@ -88,8 +88,17 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 		}
 	}
 
+	// 4. Check if `OwnerID` exists, if yes, get owner
+	var ownerUsername string
+	if usr.OwnerID != nil {
+		ownerUser, err := uc.userRepo.GetByID(*usr.OwnerID)
+		if err == nil {
+			ownerUsername = ownerUser.Login
+		}
+	}
+
 	// At this point, usr is definitely not nil and is authorized
-	// 4. Generate refresh-token + expDate
+	// 5. Generate refresh-token + expDate
 	token, expDate, err := refresh.GenerateRefreshToken()
 	if err != nil {
 		return nil, fmt.Errorf("refresh token generation error: %w", err)
@@ -97,18 +106,19 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	usr.Refresh = &token
 	usr.RefreshExp = expDate
 
-	// 5. Save refresh-token in DB
+	// 6. Save refresh-token in DB
 	if err := uc.userRepo.Update(usr); err != nil {
 		return nil, fmt.Errorf("update user (refresh) error: %w", err)
 	}
 
-	// 6. Generate access-token
+	// 7. Generate access-token
 	accessToken, _, err := paseto.Paseto().GenerateToken(paseto.PasetoClaims{
-		Username:    usr.Login,
-		CompanyID:   int(usr.CompanyID),
-		CompanyName: usr.CompanyName,
-		Roles:       "---",
-		IsPrimary:   usr.Profile.IsPrimary,
+		Username:      usr.Login,
+		CompanyID:     int(usr.CompanyID),
+		CompanyName:   usr.CompanyName,
+		Roles:         "---",
+		IsPrimary:     usr.Profile.IsPrimary,
+		OwnerUsername: ownerUsername,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("access token generation error: %w", err)
