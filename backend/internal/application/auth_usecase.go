@@ -101,7 +101,7 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	}
 
 	// At this point, usr is definitely not nil and is authorized
-	// 4. Generate refresh-token + expDate
+	// 5. Generate refresh-token + expDate
 	token, expDate, err := refresh.GenerateRefreshToken()
 	if err != nil {
 		return nil, fmt.Errorf("refresh token generation error: %w", err)
@@ -109,7 +109,7 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	usr.Refresh = &token
 	usr.RefreshExp = expDate
 
-	// 5. Save refresh-token in DB
+	// 6. Save refresh-token in DB
 	if err := uc.userRepo.Update(usr); err != nil {
 		return nil, fmt.Errorf("update user (refresh) error: %w", err)
 	}
@@ -138,6 +138,7 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 		roleNames += r.Role
 	}
 
+	// 7. Generate access-token
 	accessToken, _, err := paseto.Paseto().GenerateToken(paseto.PasetoClaims{
 		Username:      usr.Login,
 		CompanyID:     int(usr.CompanyID),

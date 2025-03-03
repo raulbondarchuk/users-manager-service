@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-// TODO: add username of primary user, if it is not empty
-
 // PasetoClaims — typed fields that you want to store in the token.
 type PasetoClaims struct {
 	Username      string    `json:"username"`
