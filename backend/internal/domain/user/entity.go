@@ -27,7 +27,8 @@ type User struct {
 	Profile *Profile    `json:"profile"`
 	Roles   []role.Role `json:"roles"`
 
-	AccessToken string `json:"-"`
+	AccessToken   string `json:"-"`
+	OwnerUsername string `json:"-"`
 }
 
 // Setter for password (hashing)
