@@ -1,6 +1,6 @@
 package models
 
-import "app/internal/domain/user"
+import "app/internal/domain/role"
 
 type RefRoleUserModel struct {
 	UserID uint `gorm:"column:userId;primaryKey"`
@@ -12,8 +12,8 @@ func (RefRoleUserModel) TableName() string {
 }
 
 // ToDomain - convert to domain structure
-func (rru *RefRoleUserModel) ToDomain() *user.RefRoleUser {
-	return &user.RefRoleUser{
+func (rru *RefRoleUserModel) ToDomain() *role.RefRoleUser {
+	return &role.RefRoleUser{
 		UserID: rru.UserID,
 		RoleID: rru.RoleID,
 	}

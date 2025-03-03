@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"app/internal/domain/user"
+	"app/internal/domain/role"
 	"app/internal/infrastructure/db"
 	"app/internal/infrastructure/db/models"
 
@@ -12,27 +12,27 @@ type roleRepository struct {
 	db *gorm.DB
 }
 
-func NewRoleRepository() user.RoleRepository {
+func NewRoleRepository() role.RoleRepository {
 	return &roleRepository{db: db.GetProvider().GetDB()}
 }
 
-// GetAllRoles - получить все роли
-func (r *roleRepository) GetAllRoles() ([]user.Role, error) {
+// GetAllRoles - get all roles
+func (r *roleRepository) GetAllRoles() ([]role.Role, error) {
 	var roleModels []models.RoleModel
 	if err := r.db.Find(&roleModels).Error; err != nil {
 		return nil, err
 	}
 
-	// Используем ToDomain для конвертации
-	roles := make([]user.Role, len(roleModels))
+	// Use ToDomain for conversion
+	roles := make([]role.Role, len(roleModels))
 	for i, rm := range roleModels {
 		roles[i] = *rm.ToDomain()
 	}
 	return roles, nil
 }
 
-// GetRoleByID - получить роль по ID
-func (r *roleRepository) GetRoleByID(id uint) (*user.Role, error) {
+// GetRoleByID - get role by ID
+func (r *roleRepository) GetRoleByID(id uint) (*role.Role, error) {
 	var roleModel models.RoleModel
 	if err := r.db.First(&roleModel, id).Error; err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (r *roleRepository) GetRoleByID(id uint) (*user.Role, error) {
 	return roleModel.ToDomain(), nil
 }
 
-// AssignRoleToUser - привязка роли к пользователю
+// AssignRoleToUser - assign role to user
 func (r *roleRepository) AssignRoleToUser(userID, roleID uint) error {
 	ref := models.RefRoleUserModel{
 		UserID: userID,
@@ -49,8 +49,8 @@ func (r *roleRepository) AssignRoleToUser(userID, roleID uint) error {
 	return r.db.Create(&ref).Error
 }
 
-// GetUserRoles - получить все роли пользователя
-func (r *roleRepository) GetUserRoles(userID uint) ([]user.Role, error) {
+// GetUserRoles - get user roles
+func (r *roleRepository) GetUserRoles(userID uint) ([]role.Role, error) {
 	var roleModels []models.RoleModel
 
 	if err := r.db.Joins("JOIN ref_user_role ON ref_user_role.role_id = roles.id").
@@ -59,8 +59,8 @@ func (r *roleRepository) GetUserRoles(userID uint) ([]user.Role, error) {
 		return nil, err
 	}
 
-	// Преобразуем в domain-модель
-	roles := make([]user.Role, len(roleModels))
+	// Convert to domain model
+	roles := make([]role.Role, len(roleModels))
 	for i, rm := range roleModels {
 		roles[i] = *rm.ToDomain()
 	}

@@ -1,6 +1,8 @@
 package user
 
 import (
+	"app/internal/domain/role"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -22,8 +24,8 @@ type User struct {
 	RefreshExp string  `json:"refreshExp"`
 	OwnerID    *uint   `json:"ownerId"`
 
-	Profile *Profile `json:"profile"`
-	Roles   []Role   `json:"roles"`
+	Profile *Profile    `json:"profile"`
+	Roles   []role.Role `json:"roles"`
 
 	AccessToken string `json:"-"`
 }
@@ -58,15 +60,4 @@ type Profile struct {
 	Phone     *string `json:"phone"`
 	Role      *string `json:"role"`
 	Photo     *string `json:"photo"` // link to photo (logo of profile)
-}
-
-type Role struct {
-	ID   uint   `json:"id"`
-	Role string `json:"role"`
-	Desc string `json:"desc"`
-}
-
-type RefRoleUser struct {
-	UserID uint `json:"userId"`
-	RoleID uint `json:"roleId"`
 }

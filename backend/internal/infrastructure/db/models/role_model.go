@@ -1,6 +1,6 @@
 package models
 
-import "app/internal/domain/user"
+import "app/internal/domain/role"
 
 // RoleModel - model for storing roles
 type RoleModel struct {
@@ -14,8 +14,8 @@ func (RoleModel) TableName() string {
 }
 
 // ToDomain - convert database model to domain structure
-func (rm *RoleModel) ToDomain() *user.Role {
-	return &user.Role{
+func (rm *RoleModel) ToDomain() *role.Role {
+	return &role.Role{
 		ID:   rm.ID,
 		Role: rm.Role,
 		Desc: rm.Desc,
