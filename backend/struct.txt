@@ -63,3 +63,10 @@ internal/
 TODO: 
 * Hay que realizar control de add/remove usuarios. Mirar usuario por token, mirar usuario al cual quieremos añadir los roles, etc...
 * Hay que controlar roles "company, company_"
+
+
+TODO:
+* Secondary user. Usuario compañia tiene que poder crear usuario secundario con su propio profile (profile se puede modificar luego).
+Usuario secundario tiene provider "secondary". Al crear el usuario secundario se puede establecer un rol (roles) a este mismo usuario.
+La contraseña debe generarse automaticamente. (Por ahora "qwe").
+Usuario debe poder cambiar la contraseña.
