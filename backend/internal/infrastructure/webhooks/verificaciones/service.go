@@ -10,7 +10,6 @@ import (
 )
 
 func (vc *verificacionesClient) Login(req ports.LoginReq) (*ports.LoginRes, int, error) {
-
 	resp, err := vc.client.R().
 		SetQueryParams(map[string]string{
 			"username": req.Username,

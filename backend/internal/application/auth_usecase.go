@@ -101,7 +101,7 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	}
 
 	// At this point, usr is definitely not nil and is authorized
-	// 5. Generate refresh-token + expDate
+	// 4. Generate refresh-token + expDate
 	token, expDate, err := refresh.GenerateRefreshToken()
 	if err != nil {
 		return nil, fmt.Errorf("refresh token generation error: %w", err)
@@ -109,7 +109,7 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	usr.Refresh = &token
 	usr.RefreshExp = expDate
 
-	// 6. Save refresh-token in DB
+	// 5. Save refresh-token in DB
 	if err := uc.userRepo.Update(usr); err != nil {
 		return nil, fmt.Errorf("update user (refresh) error: %w", err)
 	}
@@ -138,14 +138,13 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 		roleNames += r.Role
 	}
 
-	// 7. Generate access-token
 	accessToken, _, err := paseto.Paseto().GenerateToken(paseto.PasetoClaims{
 		Username:      usr.Login,
 		CompanyID:     int(usr.CompanyID),
 		CompanyName:   usr.CompanyName,
 		Roles:         roleNames,
 		OwnerUsername: ownerUsername,
-		IsPrimary:     usr.Profile != nil && usr.Profile.IsPrimary,
+		// IsPrimary:     usr.Profile != nil && usr.Profile.IsPrimary,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("access token generation error: %w", err)
@@ -201,7 +200,7 @@ func (uc *AuthUseCase) ensureUserRoles(usr *user.User) error {
 			Role: "company",
 			Desc: "General company role",
 		}
-		companyRoleID, err = uc.createRole(newRole)
+		companyRoleID, err = uc.roleRepo.CreateRole(newRole)
 		if err != nil {
 			return fmt.Errorf("create company role error: %w", err)
 		}
@@ -213,7 +212,7 @@ func (uc *AuthUseCase) ensureUserRoles(usr *user.User) error {
 			Role: companyIDRoleName,
 			Desc: fmt.Sprintf("Role for company ID %d", usr.CompanyID),
 		}
-		companyIDRoleID, err = uc.createRole(newRole)
+		companyIDRoleID, err = uc.roleRepo.CreateRole(newRole)
 		if err != nil {
 			return fmt.Errorf("create company ID role error: %w", err)
 		}
@@ -238,40 +237,4 @@ func (uc *AuthUseCase) ensureUserRoles(usr *user.User) error {
 	}
 
 	return nil
-}
-
-// getRoleNamesForUser returns a comma-separated string of role names
-func (uc *AuthUseCase) getRoleNamesForUser(userID uint) (string, error) {
-	roleRepo := uc.getRoleRepository()
-	roles, err := roleRepo.GetUserRoles(userID)
-	if err != nil {
-		return "", err
-	}
-
-	roleNames := ""
-	for i, r := range roles {
-		if i > 0 {
-			roleNames += ","
-		}
-		roleNames += r.Role
-	}
-
-	return roleNames, nil
-}
-
-// getRoleRepository returns the role repository
-// This is a placeholder - you need to implement this method
-func (uc *AuthUseCase) getRoleRepository() role.RoleRepository {
-	// In a real implementation, you would get this from your DI container
-	// For now, we'll create a new instance
-	return uc.roleRepo
-}
-
-// createRole creates a new role and returns its ID
-// This is a placeholder - you need to implement this method
-func (uc *AuthUseCase) createRole(r *role.Role) (uint, error) {
-	// In a real implementation, you would call the repository method
-	// For now, we'll return a dummy ID
-	// You need to implement CreateRole method in role repository
-	return uc.roleRepo.CreateRole(r)
 }

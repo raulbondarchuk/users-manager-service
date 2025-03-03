@@ -66,7 +66,7 @@ func (p *PasetoManager) GenerateToken(claims PasetoClaims) (string, *PasetoClaim
 	jsonToken.Set("companyId", strconv.Itoa(claims.CompanyID))
 	jsonToken.Set("companyName", claims.CompanyName)
 	jsonToken.Set("roles", claims.Roles)
-	jsonToken.Set("isPrimary", strconv.FormatBool(claims.IsPrimary))
+	// jsonToken.Set("isPrimary", strconv.FormatBool(claims.IsPrimary))
 
 	if claims.OwnerUsername != "" {
 		jsonToken.Set("ownerUsername", claims.OwnerUsername)
@@ -138,9 +138,9 @@ func (p *PasetoManager) validateTokenInternal(tokenStr string, checkExpiration b
 	}
 	claims.CompanyName = jsonToken.Get("companyName")
 	claims.Roles = jsonToken.Get("roles")
-	if isPrimaryStr := jsonToken.Get("isPrimary"); isPrimaryStr != "" {
-		claims.IsPrimary, _ = strconv.ParseBool(isPrimaryStr)
-	}
+	// if isPrimaryStr := jsonToken.Get("isPrimary"); isPrimaryStr != "" {
+	// 	claims.IsPrimary, _ = strconv.ParseBool(isPrimaryStr)
+	// }
 
 	// Check required fields
 	if claims.Username == "" {
