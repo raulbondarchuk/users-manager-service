@@ -22,7 +22,29 @@ database:
           id: 2
           name: "Verificaciones"
           desc: "Verificaciones provider"
-
+        secondary:
+          id: 3
+          name: "Secondary"
+          desc: "Secondary provider"
+      roles:
+        company:
+          id: 1
+          name: "company"
+          desc: "Default company role"
+        verificaciones:
+          id: 2
+          name: "Verificaciones"
+          desc: "Default verificaciones role"
+        secondary:
+          id: 3
+          name: "secondary"
+          desc: "Default secondary role"
+        sat01:
+          id: 4
+          name: "sat01"
+          desc: "Default sat01 role"
+        
+          
 server:
   http:
     mode: "prod"
