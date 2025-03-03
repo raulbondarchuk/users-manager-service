@@ -16,6 +16,20 @@ func NewRoleRepository() role.RoleRepository {
 	return &roleRepository{db: db.GetProvider().GetDB()}
 }
 
+// CreateRole - create new role
+func (r *roleRepository) CreateRole(role *role.Role) (uint, error) {
+	roleModel := models.RoleModel{
+		Role: role.Role,
+		Desc: role.Desc,
+	}
+
+	if err := r.db.Create(&roleModel).Error; err != nil {
+		return 0, err
+	}
+
+	return roleModel.ID, nil
+}
+
 // GetAllRoles - get all roles
 func (r *roleRepository) GetAllRoles() ([]role.Role, error) {
 	var roleModels []models.RoleModel

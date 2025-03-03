@@ -1,20 +1,14 @@
 package models
 
-import "app/internal/domain/role"
-
+// RefRoleUserModel
 type RefRoleUserModel struct {
-	UserID uint `gorm:"column:userId;primaryKey"`
-	RoleID uint `gorm:"column:roleId;primaryKey"`
+	UserID uint `gorm:"primaryKey;column:user_id"`
+	RoleID uint `gorm:"primaryKey;column:role_id"`
+
+	User UserModel `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
+	Role RoleModel `gorm:"foreignKey:RoleID;references:ID;constraint:OnDelete:CASCADE"`
 }
 
 func (RefRoleUserModel) TableName() string {
 	return "ref_user_role"
-}
-
-// ToDomain - convert to domain structure
-func (rru *RefRoleUserModel) ToDomain() *role.RefRoleUser {
-	return &role.RefRoleUser{
-		UserID: rru.UserID,
-		RoleID: rru.RoleID,
-	}
 }

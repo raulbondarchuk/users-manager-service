@@ -37,8 +37,8 @@ type UserModel struct {
 	Provider ProviderModel `gorm:"foreignKey:ProviderID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 	Profile  *ProfileModel `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
 
-	// Add connection with roles
-	Roles []RoleModel `gorm:"many2many:ref_user_role;foreignKey:ID;joinForeignKey:UserID;References:ID;joinReferences:RoleID"`
+	// Many-to-many relationship through ref_user_role
+	Roles []RoleModel `gorm:"many2many:ref_user_role;foreignKey:ID;joinForeignKey:user_id;References:ID;joinReferences:role_id"`
 }
 
 func (UserModel) TableName() string { return "users" }
@@ -140,15 +140,15 @@ func (um *UserModel) ToDomain() *user.User {
 		OwnerID:      um.OwnerID,
 	}
 
-	// Load roles of user
-	for _, role := range um.Roles {
-		domainUser.Roles = append(domainUser.Roles, *role.ToDomain())
-	}
-
 	// If UserModel has a profile (Preload("Profile") loaded it),
 	// then convert it to domain.Profile
 	if um.Profile != nil {
 		domainUser.Profile = um.Profile.ToDomain()
+	}
+
+	// Load roles of user
+	for _, role := range um.Roles {
+		domainUser.Roles = append(domainUser.Roles, *role.ToDomain())
 	}
 
 	return &domainUser
