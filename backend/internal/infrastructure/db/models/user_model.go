@@ -36,6 +36,9 @@ type UserModel struct {
 	// GORM will load the Provider automatically
 	Provider ProviderModel `gorm:"foreignKey:ProviderID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT"`
 	Profile  *ProfileModel `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE"`
+
+	// Add connection with roles
+	Roles []RoleModel `gorm:"many2many:ref_user_role;foreignKey:ID;joinForeignKey:UserID;References:ID;joinReferences:RoleID"`
 }
 
 func (UserModel) TableName() string { return "users" }
@@ -135,6 +138,11 @@ func (um *UserModel) ToDomain() *user.User {
 		Refresh:      um.Refresh,
 		RefreshExp:   um.RefreshExp,
 		OwnerID:      um.OwnerID,
+	}
+
+	// Load roles of user
+	for _, role := range um.Roles {
+		domainUser.Roles = append(domainUser.Roles, *role.ToDomain())
 	}
 
 	// If UserModel has a profile (Preload("Profile") loaded it),

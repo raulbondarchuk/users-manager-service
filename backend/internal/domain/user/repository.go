@@ -9,3 +9,10 @@ type Repository interface {
 	// Methods for error handling check if the error is a not found error
 	IsNotFoundError(err error) bool
 }
+
+type RoleRepository interface {
+	GetAllRoles() ([]Role, error)
+	GetRoleByID(id uint) (*Role, error)
+	AssignRoleToUser(userID, roleID uint) error
+	GetUserRoles(userID uint) ([]Role, error)
+}
