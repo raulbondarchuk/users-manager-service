@@ -12,16 +12,19 @@ import (
 )
 
 type AuthUseCase struct {
-	userRepo user.Repository
-	verSvc   ports.VerificacionesService
-	roleRepo role.RoleRepository
+	userRepo    user.Repository
+	verSvc      ports.VerificacionesService
+	roleRepo    role.RoleRepository
+	userService *user.UserService
 }
 
 func NewAuthUseCase(userRepo user.Repository, verSvc ports.VerificacionesService, roleRepo role.RoleRepository) *AuthUseCase {
+	userService := user.NewUserService(userRepo, roleRepo)
 	return &AuthUseCase{
-		userRepo: userRepo,
-		verSvc:   verSvc,
-		roleRepo: roleRepo,
+		userRepo:    userRepo,
+		verSvc:      verSvc,
+		roleRepo:    roleRepo,
+		userService: userService,
 	}
 }
 
@@ -101,7 +104,7 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	}
 
 	// At this point, usr is definitely not nil and is authorized
-	// 4. Generate refresh-token + expDate
+	// 5. Generate refresh-token + expDate
 	token, expDate, err := refresh.GenerateRefreshToken()
 	if err != nil {
 		return nil, fmt.Errorf("refresh token generation error: %w", err)
@@ -109,18 +112,18 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	usr.Refresh = &token
 	usr.RefreshExp = expDate
 
-	// 5. Save refresh-token in DB
+	// 6. Save refresh-token in DB
 	if err := uc.userRepo.Update(usr); err != nil {
 		return nil, fmt.Errorf("update user (refresh) error: %w", err)
 	}
 
-	// 6. Check and assign roles to user
-	if err := uc.ensureUserRoles(usr); err != nil {
+	// 7. Check and assign roles to user
+	if err := uc.userService.EnsureUserRoles(usr); err != nil {
 		return nil, fmt.Errorf("ensure user roles error: %w", err)
 	}
 
-	// 7. Get user roles directly from database
-	userRoles, err := uc.roleRepo.GetUserRoles(usr.ID)
+	// 8. Get user roles directly from database
+	userRoles, err := uc.userService.GetUserRoles(usr.ID)
 	if err != nil {
 		return nil, fmt.Errorf("get user roles error: %w", err)
 	}
@@ -128,15 +131,9 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	// Assign roles to user object
 	usr.Roles = userRoles
 
-	// 8. Generate access-token
+	// 9. Generate access-token
 	// Convert roles to string for token
-	roleNames := ""
-	for i, r := range userRoles {
-		if i > 0 {
-			roleNames += ","
-		}
-		roleNames += r.Role
-	}
+	roleNames := uc.userService.GetRoleNamesString(userRoles)
 
 	accessToken, _, err := paseto.Paseto().GenerateToken(paseto.PasetoClaims{
 		Username:      usr.Login,
@@ -151,90 +148,4 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	}
 	usr.AccessToken = accessToken
 	return usr, nil
-}
-
-// ensureUserRoles checks if user has required roles and assigns them if not
-func (uc *AuthUseCase) ensureUserRoles(usr *user.User) error {
-	// Get user roles
-	userRoles, err := uc.roleRepo.GetUserRoles(usr.ID)
-	if err != nil {
-		return fmt.Errorf("get user roles error: %w", err)
-	}
-
-	// Check if user has required roles
-	hasCompanyRole := false
-	hasCompanyIDRole := false
-	companyIDRoleName := fmt.Sprintf("company_%d", usr.CompanyID)
-
-	for _, r := range userRoles {
-		if r.Role == "company" {
-			hasCompanyRole = true
-		}
-		if r.Role == companyIDRoleName {
-			hasCompanyIDRole = true
-		}
-	}
-
-	// Get all roles to check if required roles exist
-	allRoles, err := uc.roleRepo.GetAllRoles()
-	if err != nil {
-		return fmt.Errorf("get all roles error: %w", err)
-	}
-
-	// Check if roles exist in DB
-	companyRoleID := uint(0)
-	companyIDRoleID := uint(0)
-
-	for _, r := range allRoles {
-		if r.Role == "company" {
-			companyRoleID = r.ID
-		}
-		if r.Role == companyIDRoleName {
-			companyIDRoleID = r.ID
-		}
-	}
-
-	// Create "company" role if it doesn't exist
-	if companyRoleID == 0 {
-		newRole := &role.Role{
-			Role: "company",
-			Desc: "General company role",
-		}
-		companyRoleID, err = uc.roleRepo.CreateRole(newRole)
-		if err != nil {
-			return fmt.Errorf("create company role error: %w", err)
-		}
-	}
-
-	// Create company_ID role if it doesn't exist
-	if companyIDRoleID == 0 {
-		newRole := &role.Role{
-			Role: companyIDRoleName,
-			Desc: fmt.Sprintf("Role for company ID %d", usr.CompanyID),
-		}
-		companyIDRoleID, err = uc.roleRepo.CreateRole(newRole)
-		if err != nil {
-			return fmt.Errorf("create company ID role error: %w", err)
-		}
-	}
-
-	// Determine if user should have company role
-	// If UserOwner is set (not nil and not 0), don't assign company role
-	shouldHaveCompanyRole := usr.OwnerID == nil || *usr.OwnerID == 0
-
-	// Assign "company" role to user if needed and if user doesn't have UserOwner
-	if !hasCompanyRole && shouldHaveCompanyRole {
-		if err := uc.roleRepo.AssignRoleToUser(usr.ID, companyRoleID); err != nil {
-			return fmt.Errorf("assign company role error: %w", err)
-		}
-	}
-
-	// Assign company_ID role to user if needed
-	if !hasCompanyIDRole {
-		if err := uc.roleRepo.AssignRoleToUser(usr.ID, companyIDRoleID); err != nil {
-			return fmt.Errorf("assign company ID role error: %w", err)
-		}
-	}
-
-	return nil
 }

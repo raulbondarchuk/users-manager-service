@@ -54,3 +54,12 @@ internal/
              └── errors.go       // (опционально) коды ошибок
              └── dto.go          // (опционально) внутренние структуры
 
+
+
+
+
+-- 
+
+TODO: 
+* Hay que realizar control de add/remove usuarios. Mirar usuario por token, mirar usuario al cual quieremos añadir los roles, etc...
+* Hay que controlar roles "company, company_"

@@ -2,8 +2,10 @@ package roles
 
 import (
 	"app/internal/application"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -54,4 +56,64 @@ func (h *RoleHandler) GetRolesByUsername(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, roles)
+}
+
+// AssignRolesToUser - handler for assigning roles to user
+func (h *RoleHandler) AssignRolesToUser(c *gin.Context) {
+	// Parse request body
+	var req struct {
+		Username string `json:"username" binding:"required"`
+		Roles    string `json:"roles" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Call usecase
+	if err := h.RoleUseCase.AssignRolesToUser(req.Username, req.Roles); err != nil {
+		// Check if it's a "user not found" error
+		if strings.Contains(err.Error(), "user not found") {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Roles assigned to user %s successfully", req.Username),
+	})
+}
+
+// EliminateRolesOfUser - handler for removing roles from user
+func (h *RoleHandler) RemoveRolesOfUser(c *gin.Context) {
+	// Parse request body
+	var req struct {
+		Username string `json:"username" binding:"required"`
+		Roles    string `json:"roles" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	// Call usecase
+	if err := h.RoleUseCase.EliminateRolesOfUser(req.Username, req.Roles); err != nil {
+		// Check if it's a "user not found" error
+		if strings.Contains(err.Error(), "user not found") {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return success response
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Roles removed from user %s successfully", req.Username),
+	})
 }
