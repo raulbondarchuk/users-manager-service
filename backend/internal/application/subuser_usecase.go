@@ -1,6 +1,7 @@
 package application
 
 import (
+	"app/internal/application/ports"
 	"app/internal/domain/role"
 	"app/internal/domain/user"
 	"fmt"
@@ -10,21 +11,33 @@ import (
 const PROVIDER_SECONDARY = 3
 
 type SubUserUseCase struct {
-	userRepo    user.Repository
-	roleRepo    role.RoleRepository
-	userService *user.UserService
+	userRepo          user.Repository
+	roleRepo          role.RoleRepository
+	userService       *user.UserService
+	verificacionesSvc ports.VerificacionesService
 }
 
-func NewSubUserUseCase(userRepo user.Repository, roleRepo role.RoleRepository) *SubUserUseCase {
+func NewSubUserUseCase(userRepo user.Repository, roleRepo role.RoleRepository, verificacionesSvc ports.VerificacionesService) *SubUserUseCase {
 	return &SubUserUseCase{
-		userRepo:    userRepo,
-		roleRepo:    roleRepo,
-		userService: user.NewUserService(userRepo, roleRepo),
+		userRepo:          userRepo,
+		roleRepo:          roleRepo,
+		userService:       user.NewUserService(userRepo, roleRepo),
+		verificacionesSvc: verificacionesSvc,
 	}
 }
 
 // CreateSubUser creates a subuser for a given main user's username
 func (uc *SubUserUseCase) CreateSubUser(mainUsername, subUsername, subPassword, roles string) (*user.User, error) {
+
+	// Check if user exists in verificaciones
+	exists, err := uc.verificacionesSvc.CheckIfUserExists(subUsername)
+	if err != nil {
+		return nil, fmt.Errorf("error checking if user exists in verificaciones: %w", err)
+	}
+	if exists {
+		return nil, fmt.Errorf("user %s already exists in verificaciones", subUsername)
+	}
+
 	// Start a new transaction
 	tx := uc.userRepo.BeginTransaction()
 
