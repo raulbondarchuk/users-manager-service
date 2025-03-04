@@ -102,3 +102,29 @@ func (r *userRepository) GetByLoginWithTransaction(tx *gorm.DB, login string) (*
 	}
 	return userModel.ToDomain(), nil
 }
+
+// GetUserAndSubUsersByIDWithTransaction retrieves a user by ID and all subusers with the same ownerId
+func (r *userRepository) GetUserAndSubUsersByOwnerUsernameWithTransaction(tx *gorm.DB, ownerUsername string) (*user.User, []*user.User, error) {
+	// Retrieve the main user by ID
+	var mainUserModel models.UserModel
+	if err := tx.Preload("Roles").Where("login = ?", ownerUsername).First(&mainUserModel).Error; err != nil {
+		return nil, nil, err
+	}
+
+	// Convert main user model to domain entity
+	mainUser := mainUserModel.ToDomain()
+
+	// Retrieve all subusers with ownerId equal to the main user's ID
+	var subUserModels []models.UserModel
+	if err := tx.Where("ownerId = ?", mainUser.ID).Find(&subUserModels).Error; err != nil {
+		return mainUser, nil, err
+	}
+
+	// Convert subuser models to domain entities
+	subUsers := make([]*user.User, len(subUserModels))
+	for i, um := range subUserModels {
+		subUsers[i] = um.ToDomain()
+	}
+
+	return mainUser, subUsers, nil
+}
