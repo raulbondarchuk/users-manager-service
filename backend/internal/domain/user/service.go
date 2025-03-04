@@ -2,7 +2,6 @@ package user
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -25,8 +24,6 @@ func NewUserService(userRepo Repository, roleRepo role.RoleRepository) *UserServ
 
 // EnsureUserRoles checks if user has required roles and assigns them if not
 func (s *UserService) EnsureUserRoles(usr *User) error {
-
-	log.Println("Starting EnsureUserRoles for user ID:", usr.ID)
 
 	// Get user roles
 	userRoles, err := s.roleRepo.GetUserRoles(usr.ID)
