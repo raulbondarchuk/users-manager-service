@@ -21,10 +21,11 @@ func Routes(router *gin.Engine) {
 		// // Get all providers
 		// group.GET("/all", handler.GetAllProviders)
 
-		// Get user by ID
-		group.GET("", handler.GetUserByID)
+		group.GET("", handler.GetUserByID)                   // Get user by ID
+		group.POST("/subuser", subUserHandler.CreateSubUser) // Create subuser
 
-		// Create subuser
-		group.POST("/subuser", subUserHandler.CreateSubUser)
+		group.GET("/is-company", handler.CheckIfUserIsCompany) // Check if user is company
+		group.GET("/is-logged", handler.CheckIfUserIsLogged)   // Check if user is logged
+
 	}
 }
