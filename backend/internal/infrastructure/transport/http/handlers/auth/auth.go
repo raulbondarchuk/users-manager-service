@@ -41,5 +41,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	c.Header("Authorization", "Bearer "+user.AccessToken)
+	c.Header("Refresh", *user.Refresh)
+
 	c.JSON(http.StatusOK, user)
 }

@@ -4,7 +4,9 @@ import (
 	"app/internal/domain/user"
 	"app/internal/infrastructure/db"
 	"app/internal/infrastructure/db/models"
+	"app/pkg/utils"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -127,4 +129,34 @@ func (r *userRepository) GetUserAndSubUsersByOwnerUsernameWithTransaction(tx *go
 	}
 
 	return mainUser, subUsers, nil
+}
+
+func (r *userRepository) UpdateLastAccess(userId uint) error {
+	return r.db.Model(&models.UserModel{}).Where("id = ?", userId).Update("lastAccess", time.Now().Format("2006-01-02 15:04:05")).Error
+}
+
+// UploadProfile updates the user's profile fields and lastAccess in a transaction
+func (r *userRepository) UploadProfileTransaction(userId uint, profile *user.Profile) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		updates := map[string]interface{}{
+			"name":    utils.StringOrNil(profile.Name),
+			"surname": utils.StringOrNil(profile.Surname),
+			"email":   utils.StringOrNil(profile.Email),
+			"phone":   utils.StringOrNil(profile.Phone),
+			"role":    utils.StringOrNil(profile.Role),
+			// "photo":   utils.StringOrNil(profile.Photo), // Uncomment if photo is a string
+		}
+
+		// Update the profile fields
+		if err := tx.Model(&models.ProfileModel{}).Where("userId = ?", userId).Updates(updates).Error; err != nil {
+			return err
+		}
+
+		// Update the lastAccess field of the associated user
+		if err := tx.Model(&models.UserModel{}).Where("id = ?", userId).Update("lastAccess", time.Now().Format("2006-01-02 15:04:05")).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

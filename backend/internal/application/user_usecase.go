@@ -59,3 +59,23 @@ func (uc *UserUseCase) GetUserAndSubUsersByOwnerUsername(ownerUsername string) (
 
 	return mainUser, subUsers, nil
 }
+
+func (uc *UserUseCase) UploadProfile(login string, profile *user.Profile) (*user.User, error) {
+
+	user, err := uc.repo.GetByLogin(login)
+	if err != nil {
+		return nil, err
+	}
+
+	err = uc.repo.UploadProfileTransaction(user.ID, profile)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err = uc.repo.GetByID(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
