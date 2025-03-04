@@ -25,22 +25,12 @@ func init_Roles(db *gorm.DB) error {
 			return err
 		}
 
-		// Verificaciones role
+		// Liftplay role
 		if err := createRole(
 			db,
-			uint(viper.GetInt("database.migrations.defaults.roles.verificaciones.id")),
-			viper.GetString("database.migrations.defaults.roles.verificaciones.name"),
-			viper.GetString("database.migrations.defaults.roles.verificaciones.desc"),
-		); err != nil {
-			return err
-		}
-
-		// Secondary role
-		if err := createRole(
-			db,
-			uint(viper.GetInt("database.migrations.defaults.roles.secondary.id")),
-			viper.GetString("database.migrations.defaults.roles.secondary.name"),
-			viper.GetString("database.migrations.defaults.roles.secondary.desc"),
+			uint(viper.GetInt("database.migrations.defaults.roles.liftplay.id")),
+			viper.GetString("database.migrations.defaults.roles.liftplay.name"),
+			viper.GetString("database.migrations.defaults.roles.liftplay.desc"),
 		); err != nil {
 			return err
 		}
@@ -54,18 +44,7 @@ func init_Roles(db *gorm.DB) error {
 		); err != nil {
 			return err
 		}
-
-		// Liftplay role
-		if err := createRole(
-			db,
-			uint(viper.GetInt("database.migrations.defaults.roles.liftplay.id")),
-			viper.GetString("database.migrations.defaults.roles.liftplay.name"),
-			viper.GetString("database.migrations.defaults.roles.liftplay.desc"),
-		); err != nil {
-			return err
-		}
 	}
-
 	return nil
 }
 
@@ -106,7 +85,6 @@ func init_Provider(db *gorm.DB) error {
 			return err
 		}
 	}
-
 	return nil
 }
 
