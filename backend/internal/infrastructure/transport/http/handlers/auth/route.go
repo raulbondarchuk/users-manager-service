@@ -22,6 +22,7 @@ func Routes(router *gin.Engine) {
 
 		// Get user by ID
 		group.POST("/login", handler.Login)
+		group.POST("/refresh", handler.RefreshPairTokens)
 
 	}
 }

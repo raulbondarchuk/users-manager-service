@@ -9,7 +9,6 @@ import (
 )
 
 func Routes(router *gin.Engine) {
-
 	handler := NewUserHandler(
 		application.NewUserUseCase(
 			repositories.NewUserRepository(),

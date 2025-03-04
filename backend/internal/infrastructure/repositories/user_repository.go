@@ -165,3 +165,20 @@ func (r *userRepository) UploadProfileTransaction(userId uint, profile *user.Pro
 func (r *userRepository) UpdateActiveStatus(userID uint, active bool) error {
 	return r.db.Model(&models.UserModel{}).Where("id = ?", userID).Update("active", active).Error
 }
+
+// GetByRefreshToken gets a user by refresh token
+func (r *userRepository) GetByRefreshToken(refreshToken string) (*user.User, error) {
+	var userModel models.UserModel
+	if err := r.db.Where("refresh = ?", refreshToken).First(&userModel).Error; err != nil {
+		return nil, err
+	}
+	return userModel.ToDomain(), nil
+}
+
+// UpdateRefreshToken updates the refresh token of a user
+func (r *userRepository) UpdateRefreshToken(u *user.User) error {
+	return r.db.Model(&models.UserModel{}).Where("id = ?", u.ID).Updates(map[string]interface{}{
+		"refresh":    u.Refresh,
+		"refreshExp": u.RefreshExp,
+	}).Error
+}

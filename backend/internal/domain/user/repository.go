@@ -7,12 +7,13 @@ import (
 type Repository interface {
 	Create(u *User) error
 	Update(u *User) error
+	UpdateRefreshToken(u *User) error
 	GetByID(id uint) (*User, error)
 	GetByLogin(login string) (*User, error)
 	GetByOwnerID(ownerID uint) ([]*User, error)
 	UpdateLastAccess(userId uint) error
 	UpdateActiveStatus(userID uint, active bool) error
-
+	GetByRefreshToken(refreshToken string) (*User, error)
 	// With Transaction
 	BeginTransaction() *gorm.DB
 	CreateWithTransaction(tx *gorm.DB, user *User) error

@@ -45,3 +45,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
+
+func (h *AuthHandler) RefreshPairTokens(c *gin.Context) {
+	accessTokenExpiredReq := c.Query("access")
+	refreshTokenReq := c.Query("refresh")
+
+	accessToken, refreshToken, err := h.authUC.RefreshPairTokens(accessTokenExpiredReq, refreshTokenReq)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"access": accessToken, "refresh": refreshToken})
+}

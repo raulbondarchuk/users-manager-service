@@ -9,6 +9,7 @@ import (
 	"app/internal/domain/user"
 	"app/internal/infrastructure/token/paseto"
 	"app/internal/infrastructure/token/refresh"
+	"app/internal/infrastructure/token/validation"
 )
 
 type AuthUseCase struct {
@@ -160,4 +161,34 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	}
 	usr.AccessToken = accessToken
 	return usr, nil
+}
+
+func (uc *AuthUseCase) RefreshPairTokens(accessTokenExpiredReq, refreshTokenReq string) (string, string, error) {
+	user, err := uc.userRepo.GetByRefreshToken(refreshTokenReq)
+	if err != nil {
+		return "", "", fmt.Errorf("get user by refresh token error: %w", err)
+	}
+
+	isValid, _, err := validation.CheckPairTokens(accessTokenExpiredReq, refreshTokenReq, user.Login, *user.Refresh, user.RefreshExp)
+	if err != nil {
+		return "", "", fmt.Errorf("check pair tokens error: %w", err)
+	}
+
+	if !isValid {
+		return "", "", fmt.Errorf("access denied")
+	}
+
+	token, expDate, err := refresh.GenerateRefreshToken()
+	if err != nil {
+		return "", "", fmt.Errorf("refresh token generation error: %w", err)
+	}
+
+	user.Refresh = &token
+	user.RefreshExp = expDate
+
+	if err := uc.userRepo.UpdateRefreshToken(user); err != nil {
+		return "", "", fmt.Errorf("update user (refresh) error: %w", err)
+	}
+
+	return token, expDate, nil
 }
