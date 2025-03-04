@@ -130,3 +130,25 @@ func (h *UserHandler) ActivateDeactivateUser(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "User deactivated"})
 	}
 }
+
+type RegisterRequest struct {
+	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required"`
+	CompanyName string `json:"companyName" binding:"required"`
+}
+
+func (h *UserHandler) RegisterCompanyUser(c *gin.Context) {
+	var req RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.userUC.RegisterCompanyUser(req.Username, req.Password, req.CompanyName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user})
+}

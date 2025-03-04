@@ -9,7 +9,13 @@ import (
 )
 
 func Routes(router *gin.Engine) {
-	handler := NewUserHandler(application.NewUserUseCase(repositories.NewUserRepository()))
+
+	handler := NewUserHandler(
+		application.NewUserUseCase(
+			repositories.NewUserRepository(),
+			repositories.NewInternalCompanyRepository(),
+			verificaciones.NewVerificacionesClient()))
+
 	subUserHandler := NewSubUserHandler(
 		application.NewSubUserUseCase(
 			repositories.NewUserRepository(),
@@ -20,7 +26,7 @@ func Routes(router *gin.Engine) {
 	{
 		// // Get all providers
 		// group.GET("/all", handler.GetAllProviders)
-
+		group.POST("/register", handler.RegisterCompanyUser) // Register company user
 		group.POST("/subuser", subUserHandler.CreateSubUser) // Create subuser
 
 		group.GET("/all", handler.GetUserAndSubUsersByOwnerUsername) // Get user and subusers by owner username
