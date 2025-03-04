@@ -2,9 +2,7 @@ package user
 
 import (
 	"app/internal/application"
-	"app/internal/domain/user"
 	"app/internal/infrastructure/token/paseto"
-	"app/pkg/utils"
 	"net/http"
 	"strconv"
 
@@ -105,48 +103,4 @@ func (h *UserHandler) GetUserAndSubUsersByOwnerUsername(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"company": mainUser, "subusers": subUsers})
-}
-
-type ProfileRequest struct {
-	Name    *string `json:"name"`
-	Surname *string `json:"surname"`
-	Email   *string `json:"email"`
-	Phone   *string `json:"phone"`
-	Role    *string `json:"role"`
-	Photo   *string `json:"photo"`
-}
-
-func (h *UserHandler) UploadProfile(c *gin.Context) {
-
-	claims, err := paseto.Paseto().ValidateToken(c.GetHeader("Authorization"))
-	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
-		return
-	}
-
-	var profile ProfileRequest
-	if err := c.ShouldBindJSON(&profile); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid profile request"})
-		return
-	}
-
-	profileUseCase := user.Profile{
-		Name:    utils.StringOrNil(profile.Name),
-		Surname: utils.StringOrNil(profile.Surname),
-		Email:   utils.StringOrNil(profile.Email),
-		Phone:   utils.StringOrNil(profile.Phone),
-		Role:    utils.StringOrNil(profile.Role),
-		Photo:   utils.StringOrNil(profile.Photo),
-	}
-
-	user, err := h.userUC.UploadProfile(claims.Username, &profileUseCase)
-	if err != nil {
-		if h.userUC.GetRepo().IsNotFoundError(err) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-		return
-	}
-	c.JSON(http.StatusOK, user)
 }

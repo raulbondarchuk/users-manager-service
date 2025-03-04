@@ -29,7 +29,5 @@ func Routes(router *gin.Engine) {
 		group.GET("/is-company", handler.CheckIfUserIsCompany)       // Check if user is company
 		group.GET("/is-logged", handler.CheckIfUserIsLogged)         // Check if user is logged
 
-		group.POST("/profile/upload", handler.UploadProfile) // Upload profile
-
 	}
 }

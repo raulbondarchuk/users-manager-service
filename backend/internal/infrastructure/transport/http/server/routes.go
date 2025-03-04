@@ -6,6 +6,7 @@ import (
 	"app/internal/infrastructure/transport/http/handlers/roles"
 	"app/internal/infrastructure/transport/http/handlers/token"
 	"app/internal/infrastructure/transport/http/handlers/user"
+	"app/internal/infrastructure/transport/http/handlers/user/profile"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,7 @@ func InitRoutes(router *gin.Engine) {
 
 	provider.Routes(router)
 	user.Routes(router)
+	profile.Routes(router)
 	auth.Routes(router)
 	token.Routes(router)
 	roles.Routes(router)
