@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -24,6 +25,9 @@ func NewUserService(userRepo Repository, roleRepo role.RoleRepository) *UserServ
 
 // EnsureUserRoles checks if user has required roles and assigns them if not
 func (s *UserService) EnsureUserRoles(usr *User) error {
+
+	log.Println("Starting EnsureUserRoles for user ID:", usr.ID)
+
 	// Get user roles
 	userRoles, err := s.roleRepo.GetUserRoles(usr.ID)
 	if err != nil {
@@ -79,7 +83,7 @@ func (s *UserService) EnsureUserRoles(usr *User) error {
 	if companyIDRoleID == 0 {
 		newRole := &role.Role{
 			Role: companyIDRoleName,
-			Desc: fmt.Sprintf("Role for company ID %d", usr.CompanyID),
+			Desc: fmt.Sprintf("Role for company %s", usr.CompanyName),
 		}
 		companyIDRoleID, err = s.roleRepo.CreateRole(newRole)
 		if err != nil {
@@ -139,7 +143,7 @@ func (s *UserService) GetRoleNamesString(roles []role.Role) string {
 	return roleNames
 }
 
-// AssignRolesToSubUser assigns roles to the subuser if they exist in the system
+// assignRolesToSubUser assigns roles to the subuser if they exist in the system
 func (uc *UserService) AssignRolesToSubUser(tx *gorm.DB, subUser *User, roles string) error {
 	roleNames := strings.Split(roles, ",")
 	for _, roleName := range roleNames {

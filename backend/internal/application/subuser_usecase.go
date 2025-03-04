@@ -45,6 +45,7 @@ func (uc *SubUserUseCase) CreateSubUser(mainUsername, subUsername, subPassword, 
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
+			fmt.Println("Transaction rolled back due to panic:", r)
 		}
 	}()
 
@@ -91,7 +92,7 @@ func (uc *SubUserUseCase) CreateSubUser(mainUsername, subUsername, subPassword, 
 	}
 
 	if roles != "" {
-		// 4. Assign roles to subuser
+		// 4. Assign additional roles to subuser
 		fmt.Println("roles", roles)
 		if err := uc.userService.AssignRolesToSubUser(tx, subUser, roles); err != nil {
 			tx.Rollback()
@@ -102,6 +103,11 @@ func (uc *SubUserUseCase) CreateSubUser(mainUsername, subUsername, subPassword, 
 	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
 		return nil, fmt.Errorf("error committing transaction: %w", err)
+	}
+
+	// 5. Ensure subuser has the necessary roles
+	if err := uc.userService.EnsureUserRoles(subUser); err != nil {
+		return nil, fmt.Errorf("error ensuring roles for subuser: %w", err)
 	}
 
 	subUser, err = uc.userRepo.GetByLogin(subUsername)
