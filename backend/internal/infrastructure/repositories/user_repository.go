@@ -25,7 +25,7 @@ func (r *userRepository) GetByID(id uint) (*user.User, error) {
 	var um models.UserModel
 
 	// Important to Preload("Profile"), so GORM loads the profile
-	if err := r.db.Preload("Profile").First(&um, id).Error; err != nil {
+	if err := r.db.Preload("Profile").Preload("Roles").First(&um, id).Error; err != nil {
 		return nil, err
 	}
 
