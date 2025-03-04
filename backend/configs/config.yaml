@@ -30,14 +30,6 @@ database:
           id: 1
           name: "company"
           desc: "Default company role"
-        verificaciones:
-          id: 2
-          name: "Verificaciones"
-          desc: "Default verificaciones role"
-        secondary:
-          id: 3
-          name: "secondary"
-          desc: "Default secondary role"
         liftplay:
           id: 4
           name: "liftplay"
@@ -58,6 +50,7 @@ webhooks:
   verificaciones:
     url: "https://verificaciones.liftel.es/clientes/api/v1"
     token_cache_duration: "55m"
+    timeout: "10s"
     api:
       login: "/login.php"
       checkIfUserExists: "/tecnico.php?action=checktech"

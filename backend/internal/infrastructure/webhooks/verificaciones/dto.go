@@ -32,8 +32,14 @@ type verificacionesClient struct {
 var _ ports.VerificacionesService = (*verificacionesClient)(nil)
 
 func NewVerificacionesClient() ports.VerificacionesService {
+
+	timeout, err := time.ParseDuration(viper.GetString("webhooks.verificaciones.timeout"))
+	if err != nil || viper.GetString("webhooks.verificaciones.timeout") == "" {
+		timeout = 10 * time.Second
+	}
+	client := resty.New().SetTimeout(timeout)
 	return &verificacionesClient{
-		client: resty.New(),
+		client: client,
 
 		baseURL:                    viper.GetString("webhooks.verificaciones.url"),
 		loginRoute:                 viper.GetString("webhooks.verificaciones.api.login"),

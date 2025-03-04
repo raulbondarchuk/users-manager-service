@@ -59,3 +59,28 @@ func (uc *UserUseCase) GetUserAndSubUsersByOwnerUsername(ownerUsername string) (
 
 	return mainUser, subUsers, nil
 }
+
+func (uc *UserUseCase) ActivateDeactivateUser(username string, active bool) error {
+
+	user, err := uc.repo.GetByLogin(username)
+	if err != nil {
+		return err
+	}
+
+	switch active {
+	case true:
+		err = uc.activateUser(user.ID)
+	case false:
+		err = uc.deactivateUser(user.ID)
+	}
+
+	return err
+}
+
+func (uc *UserUseCase) activateUser(userID uint) error {
+	return uc.repo.UpdateActiveStatus(userID, true)
+}
+
+func (uc *UserUseCase) deactivateUser(userID uint) error {
+	return uc.repo.UpdateActiveStatus(userID, false)
+}

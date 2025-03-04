@@ -101,7 +101,7 @@ func (u *UserModel) AfterCreate(tx *gorm.DB) (err error) {
 	isPrimary := u.OwnerID == nil
 	var role *string
 	if isPrimary {
-		defaultRole := "company"
+		defaultRole := "Company"
 		role = &defaultRole
 	}
 

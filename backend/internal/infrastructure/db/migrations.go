@@ -56,7 +56,6 @@ func Migrate(db *gorm.DB, creationDefaults bool) error {
 		&models.ProfileModel{},
 		&models.RoleModel{},
 		&models.RefRoleUserModel{},
-		// &models.SubUserModel{},
 	); err != nil {
 		return fmt.Errorf("autoMigrate error: %w", err)
 	}

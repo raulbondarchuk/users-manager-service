@@ -104,3 +104,29 @@ func (h *UserHandler) GetUserAndSubUsersByOwnerUsername(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"company": mainUser, "subusers": subUsers})
 }
+
+func (h *UserHandler) ActivateDeactivateUser(c *gin.Context) {
+	username := c.Query("username")
+	active := c.Query("active")
+
+	activeBool, err := strconv.ParseBool(active)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid active value"})
+		return
+	}
+
+	err = h.userUC.ActivateDeactivateUser(username, activeBool)
+	if err != nil {
+		if h.userUC.GetRepo().IsNotFoundError(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to activate/deactivate user"})
+		}
+		return
+	}
+	if activeBool {
+		c.JSON(http.StatusOK, gin.H{"message": "User activated"})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "User deactivated"})
+	}
+}

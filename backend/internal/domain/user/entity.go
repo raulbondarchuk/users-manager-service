@@ -20,9 +20,9 @@ type User struct {
 	CreatedAt    string  `json:"createdAt"`
 	LastAccess   string  `json:"lastAccess"`
 
-	Refresh    *string `json:"refresh"`
+	Refresh    *string `json:"-"` // `json:"refresh"`
 	RefreshExp string  `json:"-"` // `json:"refreshExp"`
-	OwnerID    *uint   `json:"-"` //`json:"ownerId"`
+	OwnerID    *uint   `json:"-"` // `json:"ownerId"`
 
 	Profile *Profile    `json:"profile"`
 	Roles   []role.Role `json:"-"` // `json:"roles"`
