@@ -13,10 +13,10 @@ type userRepository struct {
 	db *gorm.DB
 }
 
-// Ensure providerRepository implements the domain interface
+// Ensure userRepository implements the domain interface
 var _ user.Repository = (*userRepository)(nil)
 
-// NewProviderRepository — constructor, accepts *gorm.DB
+// NewUserRepository — constructor, accepts *gorm.DB
 func NewUserRepository() user.Repository {
 	return &userRepository{db: db.GetProvider().GetDB()}
 }
@@ -64,4 +64,18 @@ func (r *userRepository) Update(u *user.User) error {
 
 func (r *userRepository) IsNotFoundError(err error) bool {
 	return errors.Is(err, gorm.ErrRecordNotFound)
+}
+
+// GetByOwnerID returns users by OwnerID
+func (r *userRepository) GetByOwnerID(ownerID uint) ([]*user.User, error) {
+	var userModels []models.UserModel
+	if err := r.db.Where("ownerId = ?", ownerID).Find(&userModels).Error; err != nil {
+		return nil, err
+	}
+
+	users := make([]*user.User, len(userModels))
+	for i, um := range userModels {
+		users[i] = um.ToDomain()
+	}
+	return users, nil
 }

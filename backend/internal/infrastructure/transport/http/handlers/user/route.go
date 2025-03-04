@@ -9,6 +9,7 @@ import (
 
 func Routes(router *gin.Engine) {
 	handler := NewUserHandler(application.NewUserUseCase(repositories.NewUserRepository()))
+	subUserHandler := NewSubUserHandler(application.NewSubUserUseCase(repositories.NewUserRepository()))
 	// // Routes
 	group := router.Group("/users")
 	{
@@ -18,5 +19,7 @@ func Routes(router *gin.Engine) {
 		// Get user by ID
 		group.GET("", handler.GetUserByID)
 
+		// Create subuser
+		group.POST("/subuser", subUserHandler.CreateSubUser)
 	}
 }
