@@ -160,3 +160,8 @@ func (r *userRepository) UploadProfileTransaction(userId uint, profile *user.Pro
 		return nil
 	})
 }
+
+// UpdateActiveStatus updates the active status of a user
+func (r *userRepository) UpdateActiveStatus(userID uint, active bool) error {
+	return r.db.Model(&models.UserModel{}).Where("id = ?", userID).Update("active", active).Error
+}

@@ -11,6 +11,7 @@ type Repository interface {
 	GetByLogin(login string) (*User, error)
 	GetByOwnerID(ownerID uint) ([]*User, error)
 	UpdateLastAccess(userId uint) error
+	UpdateActiveStatus(userID uint, active bool) error
 
 	// With Transaction
 	BeginTransaction() *gorm.DB
