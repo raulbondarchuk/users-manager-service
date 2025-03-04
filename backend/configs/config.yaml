@@ -6,7 +6,6 @@ database:
   custom_logger: true
   ensure: true
   auto_migrate: true
-
   migrations:
     creation_defaults: true
     defaults:
@@ -39,8 +38,12 @@ database:
           id: 3
           name: "secondary"
           desc: "Default secondary role"
-        sat01:
+        liftplay:
           id: 4
+          name: "liftplay"
+          desc: "Default liftplay role"
+        sat01:
+          id: 5
           name: "sat01"
           desc: "Default sat01 role"
         

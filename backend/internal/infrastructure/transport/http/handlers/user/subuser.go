@@ -22,6 +22,7 @@ func NewSubUserHandler(subUserUseCase *application.SubUserUseCase) *SubUserHandl
 type CreateSubUserRequest struct {
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password"`
+	Roles    string `json:"roles"`
 }
 
 func (h *SubUserHandler) CreateSubUser(c *gin.Context) {
@@ -38,11 +39,11 @@ func (h *SubUserHandler) CreateSubUser(c *gin.Context) {
 		return
 	}
 
-	subUser, err := h.subUserUseCase.CreateSubUser(claims.Username, req.Username, req.Password)
+	subUser, err := h.subUserUseCase.CreateSubUser(claims.Username, req.Username, req.Password, req.Roles)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"sub_user": subUser})
+	c.JSON(http.StatusOK, subUser)
 }

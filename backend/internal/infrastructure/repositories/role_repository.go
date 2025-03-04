@@ -85,3 +85,35 @@ func (r *roleRepository) GetUserRoles(userID uint) ([]role.Role, error) {
 func (r *roleRepository) RemoveRoleFromUser(userID, roleID uint) error {
 	return r.db.Where("user_id = ? AND role_id = ?", userID, roleID).Delete(&models.RefRoleUserModel{}).Error
 }
+
+// GetRoleByName - get role by name
+func (r *roleRepository) GetRoleByName(name string) (*role.Role, error) {
+	var roleModel models.RoleModel
+	if err := r.db.Where("role = ?", name).First(&roleModel).Error; err != nil {
+		return nil, err
+	}
+	return roleModel.ToDomain(), nil
+}
+
+// IsNotFoundError - check if error is a not found error
+func (r *roleRepository) IsNotFoundError(err error) bool {
+	return err == gorm.ErrRecordNotFound
+}
+
+// GetRoleByNameWithTransaction gets a role by name within a transaction
+func (r *roleRepository) GetRoleByNameWithTransaction(tx *gorm.DB, roleName string) (*role.Role, error) {
+	var roleModel models.RoleModel
+	if err := tx.Where("role = ?", roleName).First(&roleModel).Error; err != nil {
+		return nil, err
+	}
+	return roleModel.ToDomain(), nil
+}
+
+// AssignRoleToUserWithTransaction assigns a role to a user within a transaction
+func (r *roleRepository) AssignRoleToUserWithTransaction(tx *gorm.DB, userID, roleID uint) error {
+	ref := models.RefRoleUserModel{
+		UserID: userID,
+		RoleID: roleID,
+	}
+	return tx.Create(&ref).Error
+}

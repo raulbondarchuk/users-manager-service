@@ -79,3 +79,26 @@ func (r *userRepository) GetByOwnerID(ownerID uint) ([]*user.User, error) {
 	}
 	return users, nil
 }
+
+// BeginTransaction starts a new transaction
+func (r *userRepository) BeginTransaction() *gorm.DB {
+	return r.db.Begin()
+}
+
+// CreateWithTransaction creates a user within a transaction
+func (r *userRepository) CreateWithTransaction(tx *gorm.DB, userToCreate *user.User) error {
+	um, err := db.FromDomainGeneric[user.User, models.UserModel](*userToCreate)
+	if err != nil {
+		return err
+	}
+	return tx.Create(&um).Error
+}
+
+// GetByLoginWithTransaction gets a user by login within a transaction
+func (r *userRepository) GetByLoginWithTransaction(tx *gorm.DB, login string) (*user.User, error) {
+	var userModel models.UserModel
+	if err := tx.Preload("Roles").Where("login = ?", login).First(&userModel).Error; err != nil {
+		return nil, err
+	}
+	return userModel.ToDomain(), nil
+}

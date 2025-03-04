@@ -9,7 +9,7 @@ import (
 
 func Routes(router *gin.Engine) {
 	handler := NewUserHandler(application.NewUserUseCase(repositories.NewUserRepository()))
-	subUserHandler := NewSubUserHandler(application.NewSubUserUseCase(repositories.NewUserRepository()))
+	subUserHandler := NewSubUserHandler(application.NewSubUserUseCase(repositories.NewUserRepository(), repositories.NewRoleRepository()))
 	// // Routes
 	group := router.Group("/users")
 	{

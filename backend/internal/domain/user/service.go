@@ -2,9 +2,12 @@ package user
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"app/internal/domain/role"
+
+	"gorm.io/gorm"
 )
 
 type UserService struct {
@@ -134,4 +137,30 @@ func (s *UserService) GetRoleNamesString(roles []role.Role) string {
 		roleNames += r.Role
 	}
 	return roleNames
+}
+
+// AssignRolesToSubUser assigns roles to the subuser if they exist in the system
+func (uc *UserService) AssignRolesToSubUser(tx *gorm.DB, subUser *User, roles string) error {
+	roleNames := strings.Split(roles, ",")
+	for _, roleName := range roleNames {
+		roleName = strings.TrimSpace(roleName)
+		if roleName == "" {
+			continue
+		}
+
+		// Check if role exists
+		role, err := uc.roleRepo.GetRoleByNameWithTransaction(tx, roleName)
+		if err != nil {
+			if uc.roleRepo.IsNotFoundError(err) {
+				return fmt.Errorf("role not found: %s", roleName) // Return error if role not found
+			}
+			return fmt.Errorf("error retrieving role: %w", err)
+		}
+
+		// Assign role to subuser
+		if err := uc.roleRepo.AssignRoleToUserWithTransaction(tx, subUser.ID, role.ID); err != nil {
+			return fmt.Errorf("error assigning role %s to subuser: %w", roleName, err)
+		}
+	}
+	return nil
 }
