@@ -41,6 +41,18 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 
 	// 2. If user NOT found OR user.ProviderID=2 => check external service
 	if usr == nil || usr.ProviderID == 2 {
+
+		if usr == nil {
+			// Check if user already exists in verificaciones
+			exists, err := uc.verSvc.CheckIfUserExists(login)
+			if err != nil {
+				return nil, fmt.Errorf("error checking if user exists in verificaciones: %w", err)
+			}
+			if !exists {
+				return nil, fmt.Errorf("user does not exist")
+			}
+		}
+
 		resp, status, err := uc.verSvc.Login(ports.LoginReq{
 			Username: login,
 			Password: password,

@@ -13,10 +13,10 @@ type userRepository struct {
 	db *gorm.DB
 }
 
-// Ensure providerRepository implements the domain interface
+// Ensure userRepository implements the domain interface
 var _ user.Repository = (*userRepository)(nil)
 
-// NewProviderRepository — constructor, accepts *gorm.DB
+// NewUserRepository — constructor, accepts *gorm.DB
 func NewUserRepository() user.Repository {
 	return &userRepository{db: db.GetProvider().GetDB()}
 }
@@ -64,4 +64,41 @@ func (r *userRepository) Update(u *user.User) error {
 
 func (r *userRepository) IsNotFoundError(err error) bool {
 	return errors.Is(err, gorm.ErrRecordNotFound)
+}
+
+// GetByOwnerID returns users by OwnerID
+func (r *userRepository) GetByOwnerID(ownerID uint) ([]*user.User, error) {
+	var userModels []models.UserModel
+	if err := r.db.Where("ownerId = ?", ownerID).Find(&userModels).Error; err != nil {
+		return nil, err
+	}
+
+	users := make([]*user.User, len(userModels))
+	for i, um := range userModels {
+		users[i] = um.ToDomain()
+	}
+	return users, nil
+}
+
+// BeginTransaction starts a new transaction
+func (r *userRepository) BeginTransaction() *gorm.DB {
+	return r.db.Begin()
+}
+
+// CreateWithTransaction creates a user within a transaction
+func (r *userRepository) CreateWithTransaction(tx *gorm.DB, userToCreate *user.User) error {
+	um, err := db.FromDomainGeneric[user.User, models.UserModel](*userToCreate)
+	if err != nil {
+		return err
+	}
+	return tx.Create(&um).Error
+}
+
+// GetByLoginWithTransaction gets a user by login within a transaction
+func (r *userRepository) GetByLoginWithTransaction(tx *gorm.DB, login string) (*user.User, error) {
+	var userModel models.UserModel
+	if err := tx.Preload("Roles").Where("login = ?", login).First(&userModel).Error; err != nil {
+		return nil, err
+	}
+	return userModel.ToDomain(), nil
 }

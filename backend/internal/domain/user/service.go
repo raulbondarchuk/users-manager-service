@@ -2,9 +2,13 @@ package user
 
 import (
 	"fmt"
+	"log"
+	"strings"
 	"time"
 
 	"app/internal/domain/role"
+
+	"gorm.io/gorm"
 )
 
 type UserService struct {
@@ -21,6 +25,9 @@ func NewUserService(userRepo Repository, roleRepo role.RoleRepository) *UserServ
 
 // EnsureUserRoles checks if user has required roles and assigns them if not
 func (s *UserService) EnsureUserRoles(usr *User) error {
+
+	log.Println("Starting EnsureUserRoles for user ID:", usr.ID)
+
 	// Get user roles
 	userRoles, err := s.roleRepo.GetUserRoles(usr.ID)
 	if err != nil {
@@ -76,7 +83,7 @@ func (s *UserService) EnsureUserRoles(usr *User) error {
 	if companyIDRoleID == 0 {
 		newRole := &role.Role{
 			Role: companyIDRoleName,
-			Desc: fmt.Sprintf("Role for company ID %d", usr.CompanyID),
+			Desc: fmt.Sprintf("Role for company %s", usr.CompanyName),
 		}
 		companyIDRoleID, err = s.roleRepo.CreateRole(newRole)
 		if err != nil {
@@ -134,4 +141,30 @@ func (s *UserService) GetRoleNamesString(roles []role.Role) string {
 		roleNames += r.Role
 	}
 	return roleNames
+}
+
+// assignRolesToSubUser assigns roles to the subuser if they exist in the system
+func (uc *UserService) AssignRolesToSubUser(tx *gorm.DB, subUser *User, roles string) error {
+	roleNames := strings.Split(roles, ",")
+	for _, roleName := range roleNames {
+		roleName = strings.TrimSpace(roleName)
+		if roleName == "" {
+			continue
+		}
+
+		// Check if role exists
+		role, err := uc.roleRepo.GetRoleByNameWithTransaction(tx, roleName)
+		if err != nil {
+			if uc.roleRepo.IsNotFoundError(err) {
+				return fmt.Errorf("role not found: %s", roleName) // Return error if role not found
+			}
+			return fmt.Errorf("error retrieving role: %w", err)
+		}
+
+		// Assign role to subuser
+		if err := uc.roleRepo.AssignRoleToUserWithTransaction(tx, subUser.ID, role.ID); err != nil {
+			return fmt.Errorf("error assigning role %s to subuser: %w", roleName, err)
+		}
+	}
+	return nil
 }

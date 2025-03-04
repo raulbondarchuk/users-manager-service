@@ -3,20 +3,29 @@ package user
 import (
 	"app/internal/application"
 	"app/internal/infrastructure/repositories"
+	"app/internal/infrastructure/webhooks/verificaciones"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Routes(router *gin.Engine) {
 	handler := NewUserHandler(application.NewUserUseCase(repositories.NewUserRepository()))
+	subUserHandler := NewSubUserHandler(
+		application.NewSubUserUseCase(
+			repositories.NewUserRepository(),
+			repositories.NewRoleRepository(),
+			verificaciones.NewVerificacionesClient()))
 	// // Routes
 	group := router.Group("/users")
 	{
 		// // Get all providers
 		// group.GET("/all", handler.GetAllProviders)
 
-		// Get user by ID
-		group.GET("", handler.GetUserByID)
+		group.GET("", handler.GetUserByID)                   // Get user by ID
+		group.POST("/subuser", subUserHandler.CreateSubUser) // Create subuser
+
+		group.GET("/is-company", handler.CheckIfUserIsCompany) // Check if user is company
+		group.GET("/is-logged", handler.CheckIfUserIsLogged)   // Check if user is logged
 
 	}
 }
