@@ -3,6 +3,7 @@ package db
 import (
 	"app/internal/infrastructure/db/models"
 	"app/pkg/config"
+	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
@@ -112,5 +113,57 @@ func init_User(db *gorm.DB) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func init_InternalCompany(db *gorm.DB) error {
+	// 1. Check if the internal_companies table is empty
+	var count int64
+	if err := db.Model(&models.InternalCompanyModel{}).Count(&count).Error; err != nil {
+		return fmt.Errorf("error counting internal_companies: %w", err)
+	}
+
+	// 2. Set initial auto-increment value if the table is empty
+	if count == 0 {
+		if err := db.Exec("ALTER TABLE internal_companies AUTO_INCREMENT = 20000").Error; err != nil {
+			return fmt.Errorf("error setting initial auto-increment value: %w", err)
+		}
+	}
+
+	// 3. Check if the trigger exists and create it if it doesn't
+	triggerExistsQuery := `
+		SELECT COUNT(*)
+		FROM information_schema.triggers
+		WHERE trigger_name = 'before_insert_internal_companies'
+		AND trigger_schema = DATABASE();
+	`
+
+	var triggerCount int64
+	if err := db.Raw(triggerExistsQuery).Scan(&triggerCount).Error; err != nil {
+		return fmt.Errorf("error checking trigger existence: %w", err)
+	}
+
+	if triggerCount == 0 {
+		createTriggerQuery := `
+			CREATE TRIGGER before_insert_internal_companies
+			BEFORE INSERT ON internal_companies
+			FOR EACH ROW
+			BEGIN
+				DECLARE max_id INT;
+
+				-- Get the maximum ID from the table
+				SELECT IFNULL(MAX(ID), 19999) INTO max_id FROM internal_companies;
+
+				-- Set the new ID as max_id + 1
+				SET NEW.ID = max_id + 1;
+			END;
+		`
+
+		if err := db.Exec(createTriggerQuery).Error; err != nil {
+			return fmt.Errorf("error creating trigger: %w", err)
+		}
+		log.Println("Trigger 'before_insert_internal_companies' created successfully.")
+	}
+
 	return nil
 }

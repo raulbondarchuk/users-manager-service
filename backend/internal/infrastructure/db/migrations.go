@@ -56,11 +56,16 @@ func Migrate(db *gorm.DB, creationDefaults bool) error {
 		&models.ProfileModel{},
 		&models.RoleModel{},
 		&models.RefRoleUserModel{},
+		&models.InternalCompanyModel{},
 	); err != nil {
 		return fmt.Errorf("autoMigrate error: %w", err)
 	}
 
-	// 2. (Optional) initialize default data, if you want
+	if err := init_InternalCompany(db); err != nil {
+		return err
+	}
+
+	// 3. (Optional) initialize default data, if you want
 	if creationDefaults {
 		if err := init_default_data(db); err != nil {
 			return err
