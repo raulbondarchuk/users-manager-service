@@ -8,11 +8,11 @@ import (
 
 type User struct {
 	ID           uint    `json:"id"`
-	UUID         string  `json:"uuid"`
-	Login        string  `json:"login"`
+	UUID         string  `json:"-"` // `json:"uuid"`
+	Login        string  `json:"username"`
 	Password     *string `json:"-"`
-	CompanyID    uint    `json:"companyId"`
-	CompanyName  string  `json:"companyName"`
+	CompanyID    uint    `json:"-"` //`json:"companyId"`
+	CompanyName  string  `json:"-"` //`json:"companyName"`
 	ProviderID   uint    `json:"providerId"`
 	ProviderName string  `json:"providerName"`
 	Active       bool    `json:"active"`
@@ -21,11 +21,11 @@ type User struct {
 	LastAccess   string  `json:"lastAccess"`
 
 	Refresh    *string `json:"refresh"`
-	RefreshExp string  `json:"refreshExp"`
-	OwnerID    *uint   `json:"ownerId"`
+	RefreshExp string  `json:"-"` // `json:"refreshExp"`
+	OwnerID    *uint   `json:"-"` //`json:"ownerId"`
 
 	Profile *Profile    `json:"profile"`
-	Roles   []role.Role `json:"roles"`
+	Roles   []role.Role `json:"-"` // `json:"roles"`
 
 	AccessToken   string `json:"-"`
 	OwnerUsername string `json:"-"`
@@ -52,8 +52,8 @@ func (u *User) CheckPassword(plain string) bool {
 }
 
 type Profile struct {
-	ID        uint    `json:"id"`
-	UserID    uint    `json:"userId"`    // 1:1 connection with User
+	ID        uint    `json:"-"`         //`json:"id"`
+	UserID    uint    `json:"-"`         //`json:"userId"`    // 1:1 connection with User
 	IsPrimary bool    `json:"isPrimary"` // depends on whether the user has an OwnerID
 	Name      *string `json:"name"`
 	Surname   *string `json:"surname"`

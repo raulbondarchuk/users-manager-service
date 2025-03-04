@@ -35,6 +35,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
+	if !user.Active {
+		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		return
+	}
+
 	c.Header("Authorization", "Bearer "+user.AccessToken)
 	c.JSON(http.StatusOK, user)
 }

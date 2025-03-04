@@ -1,6 +1,8 @@
 package user
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Repository interface {
 	Create(u *User) error
@@ -12,6 +14,7 @@ type Repository interface {
 	BeginTransaction() *gorm.DB
 	CreateWithTransaction(tx *gorm.DB, user *User) error
 	GetByLoginWithTransaction(tx *gorm.DB, login string) (*User, error)
+	GetUserAndSubUsersByOwnerUsernameWithTransaction(tx *gorm.DB, ownerUsername string) (*User, []*User, error)
 
 	// Methods for error handling check if the error is a not found error
 	IsNotFoundError(err error) bool
