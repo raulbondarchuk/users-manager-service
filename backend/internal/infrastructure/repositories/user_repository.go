@@ -71,7 +71,7 @@ func (r *userRepository) IsNotFoundError(err error) bool {
 // GetByOwnerID returns users by OwnerID
 func (r *userRepository) GetByOwnerID(ownerID uint) ([]*user.User, error) {
 	var userModels []models.UserModel
-	if err := r.db.Where("ownerId = ?", ownerID).Find(&userModels).Error; err != nil {
+	if err := r.db.Preload("Profile").Preload("Roles").Where("ownerId = ?", ownerID).Find(&userModels).Error; err != nil {
 		return nil, err
 	}
 

@@ -3,6 +3,7 @@ package user
 import (
 	"app/internal/application"
 	"app/internal/infrastructure/token/paseto"
+	"app/pkg/errorsLib"
 	"net/http"
 	"strconv"
 
@@ -98,7 +99,7 @@ func (h *UserHandler) GetUserAndSubUsersByOwnerUsername(c *gin.Context) {
 
 	mainUser, subUsers, err := h.userUC.GetUserAndSubUsersByOwnerUsername(mainUserUsername)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user and subusers"})
+		c.JSON(errorsLib.HTTPStatusCode(err.Error()), gin.H{"error": err.Error()})
 		return
 	}
 

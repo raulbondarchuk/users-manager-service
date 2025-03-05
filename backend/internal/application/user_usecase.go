@@ -4,6 +4,7 @@ import (
 	"app/internal/application/ports"
 	"app/internal/domain/internal_company"
 	"app/internal/domain/user"
+	"app/pkg/errorsLib"
 	"fmt"
 	"time"
 )
@@ -58,6 +59,9 @@ func (uc *UserUseCase) GetUserAndSubUsersByOwnerUsername(ownerUsername string) (
 
 	mainUser, subUsers, err := uc.repo.GetUserAndSubUsersByOwnerUsernameWithTransaction(tx, ownerUsername)
 	if err != nil {
+		if uc.repo.IsNotFoundError(err) {
+			return nil, nil, errorsLib.ErrNotFound
+		}
 		return nil, nil, err
 	}
 
