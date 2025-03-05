@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -138,6 +139,16 @@ func (um *UserModel) ToDomain() *user.User {
 		Refresh:      um.Refresh,
 		RefreshExp:   um.RefreshExp,
 		OwnerID:      um.OwnerID,
+	}
+
+	// Parse LastAccess if it's not empty
+	if um.RefreshExp != "" {
+		parsedTime, err := time.Parse(time.RFC3339, um.RefreshExp)
+		if err != nil {
+			log.Printf("Error parsing RefreshExp time: %v", err)
+		} else {
+			domainUser.RefreshExp = parsedTime.Format("2006-01-02 15:04:05")
+		}
 	}
 
 	// If UserModel has a profile (Preload("Profile") loaded it),

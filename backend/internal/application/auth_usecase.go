@@ -2,6 +2,7 @@ package application
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"app/internal/application/ports"
@@ -9,7 +10,7 @@ import (
 	"app/internal/domain/user"
 	"app/internal/infrastructure/token/paseto"
 	"app/internal/infrastructure/token/refresh"
-	"app/internal/infrastructure/token/validation"
+	"app/pkg/errorsLib"
 )
 
 type AuthUseCase struct {
@@ -163,19 +164,27 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 	return usr, nil
 }
 
-func (uc *AuthUseCase) RefreshPairTokens(accessTokenExpiredReq, refreshTokenReq string) (string, string, error) {
+func (uc *AuthUseCase) RefreshPairTokens(refreshTokenReq string) (string, string, error) {
+
 	user, err := uc.userRepo.GetByRefreshToken(refreshTokenReq)
 	if err != nil {
-		return "", "", fmt.Errorf("get user by refresh token error: %w", err)
+		if !uc.userRepo.IsNotFoundError(err) {
+			return "", "", fmt.Errorf("get user by refresh token error: %w", err)
+		}
+		return "", "", errorsLib.ErrAccessDenied
 	}
 
-	isValid, _, err := validation.CheckPairTokens(accessTokenExpiredReq, refreshTokenReq, user.Login, *user.Refresh, user.RefreshExp)
-	if err != nil {
-		return "", "", fmt.Errorf("check pair tokens error: %w", err)
+	if refreshTokenReq != *user.Refresh {
+		return "", "", errorsLib.ErrAccessDenied
 	}
 
-	if !isValid {
-		return "", "", fmt.Errorf("access denied")
+	status, err := refresh.ValidateRefreshToken(refreshTokenReq, user.RefreshExp)
+	if err != nil && status != http.StatusUnauthorized {
+		return "", "", fmt.Errorf("refresh token validation error: %w", err)
+	}
+
+	if status != http.StatusOK {
+		return "", "", errorsLib.ErrAccessDenied
 	}
 
 	token, expDate, err := refresh.GenerateRefreshToken()
@@ -186,9 +195,43 @@ func (uc *AuthUseCase) RefreshPairTokens(accessTokenExpiredReq, refreshTokenReq 
 	user.Refresh = &token
 	user.RefreshExp = expDate
 
-	if err := uc.userRepo.UpdateRefreshToken(user); err != nil {
+	if err := uc.userRepo.Update(user); err != nil {
 		return "", "", fmt.Errorf("update user (refresh) error: %w", err)
 	}
 
-	return token, expDate, nil
+	// 8. Get user roles directly from database
+	userRoles, err := uc.userService.GetUserRoles(user.ID)
+	if err != nil {
+		return "", "", fmt.Errorf("get user roles error: %w", err)
+	}
+
+	// Assign roles to user object
+	user.Roles = userRoles
+
+	// 9. Generate access-token
+	// Convert roles to string for token
+	roleNames := uc.userService.GetRoleNamesString(userRoles)
+
+	var ownerUsername string
+	if user.OwnerID != nil {
+		ownerUser, err := uc.userRepo.GetByID(*user.OwnerID)
+		if err == nil {
+			ownerUsername = ownerUser.Login
+		}
+	}
+
+	accessToken, _, err := paseto.Paseto().GenerateToken(paseto.PasetoClaims{
+		Username:      user.Login,
+		CompanyID:     int(user.CompanyID),
+		CompanyName:   user.CompanyName,
+		Roles:         roleNames,
+		OwnerUsername: ownerUsername,
+		// IsPrimary:     usr.Profile != nil && usr.Profile.IsPrimary,
+	})
+	if err != nil {
+		return "", "", fmt.Errorf("access token generation error: %w", err)
+	}
+	user.AccessToken = accessToken
+
+	return user.AccessToken, *user.Refresh, nil
 }

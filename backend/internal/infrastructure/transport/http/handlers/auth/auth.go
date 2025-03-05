@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"app/internal/application"
+	"app/pkg/errorsLib"
 )
 
 type AuthHandler struct {
@@ -36,7 +37,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	if !user.Active {
-		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
+		c.JSON(errorsLib.HTTPStatusCode(errorsLib.ErrAccessDenied.Error()), gin.H{"error": errorsLib.ErrAccessDenied.Error()})
 		return
 	}
 
@@ -47,14 +48,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func (h *AuthHandler) RefreshPairTokens(c *gin.Context) {
-	accessTokenExpiredReq := c.Query("access")
 	refreshTokenReq := c.Query("refresh")
 
-	accessToken, refreshToken, err := h.authUC.RefreshPairTokens(accessTokenExpiredReq, refreshTokenReq)
+	accessToken, refreshToken, err := h.authUC.RefreshPairTokens(refreshTokenReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if err.Error() == errorsLib.ErrAccessDenied.Error() {
+			c.JSON(http.StatusLocked, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
-
 	c.JSON(http.StatusOK, gin.H{"access": accessToken, "refresh": refreshToken})
 }
