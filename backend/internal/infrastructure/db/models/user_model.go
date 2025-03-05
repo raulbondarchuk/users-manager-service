@@ -141,6 +141,26 @@ func (um *UserModel) ToDomain() *user.User {
 		OwnerID:      um.OwnerID,
 	}
 
+	// Parse and format CreatedAt if it's not empty
+	if um.CreatedAt != "" {
+		parsedTime, err := time.Parse(time.RFC3339, um.CreatedAt)
+		if err != nil {
+			log.Printf("Error parsing CreatedAt time: %v", err)
+		} else {
+			domainUser.CreatedAt = parsedTime.Format("2006-01-02 15:04:05")
+		}
+	}
+
+	// Parse and format LastAccess if it's not empty
+	if um.LastAccess != "" {
+		parsedTime, err := time.Parse(time.RFC3339, um.LastAccess)
+		if err != nil {
+			log.Printf("Error parsing LastAccess time: %v", err)
+		} else {
+			domainUser.LastAccess = parsedTime.Format("2006-01-02 15:04:05")
+		}
+	}
+
 	// Parse LastAccess if it's not empty
 	if um.RefreshExp != "" {
 		parsedTime, err := time.Parse(time.RFC3339, um.RefreshExp)

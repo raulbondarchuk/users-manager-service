@@ -1,6 +1,6 @@
 database:
-  # host: "10.70.20.50"
-  host: "164.132.223.56"
+  host: "10.70.20.90"
+  # host: "164.132.223.56"
   port: 3307
   schema: "um_v3"
   custom_logger: true
