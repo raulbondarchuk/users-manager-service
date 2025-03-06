@@ -11,8 +11,8 @@ type User struct {
 	UUID         string  `json:"-"` // `json:"uuid"`
 	Login        string  `json:"username"`
 	Password     *string `json:"-"`
-	CompanyID    uint    `json:"-"` //`json:"companyId"`
-	CompanyName  string  `json:"-"` //`json:"companyName"`
+	CompanyID    uint    `json:"companyId"`   //`json:"companyId"`
+	CompanyName  string  `json:"companyName"` //`json:"companyName"`
 	ProviderID   uint    `json:"providerId"`
 	ProviderName string  `json:"providerName"`
 	Active       bool    `json:"active"`
