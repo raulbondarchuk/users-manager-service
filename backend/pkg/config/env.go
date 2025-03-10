@@ -35,6 +35,8 @@ type Config struct {
 	MAIL_SMTP_PASSWORD string `env:"MAIL_SMTP_PASSWORD,required"`
 	MAIL_SMTP_TLS      bool   `env:"MAIL_SMTP_TLS,required"`
 
+	// MIDDLEWARE PARA CONTRASEÑAS
+	MIDDLEWARE_PASSWORD string `env:"MIDDLEWARE_PASSWORD,required"`
 	// More fields if needed ...
 }
 

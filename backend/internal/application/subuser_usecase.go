@@ -27,7 +27,7 @@ func NewSubUserUseCase(userRepo user.Repository, roleRepo role.RoleRepository, v
 }
 
 // CreateSubUser creates a subuser for a given main user's username
-func (uc *SubUserUseCase) CreateSubUser(mainUsername, subUsername, subPassword, roles string) (*user.User, error) {
+func (uc *SubUserUseCase) CreateSubUser(mainUsername, subUsername, subPassword, roles, email string) (*user.User, error) {
 
 	// Check if user exists in verificaciones
 	exists, err := uc.verificacionesSvc.CheckIfUserExists(subUsername)
