@@ -38,6 +38,9 @@ type Config struct {
 
 	// MIDDLEWARE PARA CONTRASEÑAS
 	MIDDLEWARE_PASSWORD string `env:"MIDDLEWARE_PASSWORD,required"`
+
+	// MIDDLEWARE PARA RESTABLECER LA CONTRASEÑA
+	MIDDLEWARE_RECOVER_LINK string `env:"MIDDLEWARE_RECOVER_LINK,required"`
 	// More fields if needed ...
 }
 

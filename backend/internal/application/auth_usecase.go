@@ -10,6 +10,7 @@ import (
 	"app/internal/domain/user"
 	"app/internal/infrastructure/token/paseto"
 	"app/internal/infrastructure/token/refresh"
+	"app/pkg/config"
 	"app/pkg/errorsLib"
 )
 
@@ -236,6 +237,7 @@ func (uc *AuthUseCase) RefreshPairTokens(refreshTokenReq string) (string, string
 	return user.AccessToken, *user.Refresh, nil
 }
 
+// ForgotPassword sends a forgot password email to the user
 func (uc *AuthUseCase) ForgotPassword(username, subject, body string) (string, error) {
 
 	user, err := uc.userRepo.GetByLogin(username)
@@ -246,11 +248,15 @@ func (uc *AuthUseCase) ForgotPassword(username, subject, body string) (string, e
 		return "", fmt.Errorf("error retrieving user: %w", err)
 	}
 
+	if user.ProviderID != 1 && user.ProviderID != 3 {
+		return "", fmt.Errorf("forbidden")
+	}
+
 	recoverToken, _, err := paseto.Paseto().GenerateRecoverToken(paseto.PasetoClaims{
 		Username: user.Login,
 	})
 
-	link := "http://localhost:8133/auth/reset-password"
+	link := config.ENV().MIDDLEWARE_RECOVER_LINK
 	link = fmt.Sprintf("%s?token=%s", link, recoverToken)
 	err = NewMailUseCase().SendEmailForgotPassword(user.Login, subject, body, link)
 	if err != nil {
@@ -260,11 +266,16 @@ func (uc *AuthUseCase) ForgotPassword(username, subject, body string) (string, e
 	return link, nil
 }
 
+// ResetPassword resets the password for a user
 func (uc *AuthUseCase) ResetPassword(username, password string) error {
 
 	user, err := uc.userRepo.GetByLogin(username)
 	if err != nil {
 		return fmt.Errorf("error retrieving user: %w", err)
+	}
+
+	if user.ProviderID != 1 && user.ProviderID != 3 {
+		return fmt.Errorf("forbidden")
 	}
 
 	user.Password = &password
