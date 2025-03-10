@@ -2,6 +2,7 @@ package user
 
 import (
 	"net/http"
+	"strings"
 
 	"app/internal/application"
 	"app/internal/infrastructure/token/paseto"
@@ -41,7 +42,11 @@ func (h *SubUserHandler) CreateSubUser(c *gin.Context) {
 
 	subUser, err := h.subUserUseCase.CreateSubUser(claims.Username, req.Username, req.Password, req.Roles)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if strings.Contains(err.Error(), "user already exists") {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 

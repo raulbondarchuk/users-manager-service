@@ -6,6 +6,7 @@ import (
 	"app/internal/infrastructure/db/models"
 	"app/pkg/utils"
 	"errors"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -21,6 +22,14 @@ var _ user.Repository = (*userRepository)(nil)
 // NewUserRepository — constructor, accepts *gorm.DB
 func NewUserRepository() user.Repository {
 	return &userRepository{db: db.GetProvider().GetDB()}
+}
+
+func (r *userRepository) IsNotFoundError(err error) bool {
+	return errors.Is(err, gorm.ErrRecordNotFound)
+}
+
+func (r *userRepository) IsAlreadyExistsError(err error) bool {
+	return errors.Is(err, gorm.ErrDuplicatedKey) || strings.Contains(err.Error(), "Error 1062")
 }
 
 func (r *userRepository) GetByID(id uint) (*user.User, error) {
@@ -62,10 +71,6 @@ func (r *userRepository) Update(u *user.User) error {
 		return err
 	}
 	return r.db.Save(&um).Error
-}
-
-func (r *userRepository) IsNotFoundError(err error) bool {
-	return errors.Is(err, gorm.ErrRecordNotFound)
 }
 
 // GetByOwnerID returns users by OwnerID

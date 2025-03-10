@@ -82,6 +82,9 @@ func (uc *SubUserUseCase) CreateSubUser(mainUsername, subUsername, subPassword, 
 	// 3. Save subuser to the repository
 	if err := uc.userRepo.CreateWithTransaction(tx, subUser); err != nil {
 		tx.Rollback()
+		if uc.userRepo.IsAlreadyExistsError(err) {
+			return nil, fmt.Errorf("user already exists")
+		}
 		return nil, fmt.Errorf("error creating subuser: %w", err)
 	}
 

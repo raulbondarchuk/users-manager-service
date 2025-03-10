@@ -23,4 +23,5 @@ type Repository interface {
 
 	// Methods for error handling check if the error is a not found error
 	IsNotFoundError(err error) bool
+	IsAlreadyExistsError(err error) bool
 }
