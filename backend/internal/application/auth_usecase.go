@@ -237,6 +237,9 @@ func (uc *AuthUseCase) RefreshPairTokens(refreshTokenReq string) (string, string
 }
 
 // ForgotPassword sends a forgot password email to the user
+// link is the link to the reset password page (link to frontend)
+// subject is the subject of the email
+// body is the body of the email
 func (uc *AuthUseCase) ForgotPassword(username, link, subject, body string) (string, error) {
 
 	user, err := uc.userRepo.GetByLogin(username)
