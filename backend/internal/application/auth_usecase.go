@@ -235,3 +235,43 @@ func (uc *AuthUseCase) RefreshPairTokens(refreshTokenReq string) (string, string
 
 	return user.AccessToken, *user.Refresh, nil
 }
+
+func (uc *AuthUseCase) ForgotPassword(username, subject, body string) (string, error) {
+
+	user, err := uc.userRepo.GetByLogin(username)
+	if err != nil {
+		if uc.userRepo.IsNotFoundError(err) {
+			return "", fmt.Errorf("forbidden")
+		}
+		return "", fmt.Errorf("error retrieving user: %w", err)
+	}
+
+	recoverToken, _, err := paseto.Paseto().GenerateRecoverToken(paseto.PasetoClaims{
+		Username: user.Login,
+	})
+
+	link := "http://localhost:8133/auth/reset-password"
+	link = fmt.Sprintf("%s?token=%s", link, recoverToken)
+	err = NewMailUseCase().SendEmailForgotPassword(user.Login, subject, body, link)
+	if err != nil {
+		return "", fmt.Errorf("error sending email: %w", err)
+	}
+
+	return link, nil
+}
+
+func (uc *AuthUseCase) ResetPassword(username, password string) error {
+
+	user, err := uc.userRepo.GetByLogin(username)
+	if err != nil {
+		return fmt.Errorf("error retrieving user: %w", err)
+	}
+
+	user.Password = &password
+
+	if err := uc.userRepo.Update(user); err != nil {
+		return fmt.Errorf("error updating user: %w", err)
+	}
+
+	return nil
+}

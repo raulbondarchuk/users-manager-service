@@ -14,8 +14,9 @@ import (
 
 // PasetoManager manages PASETO tokens
 type PasetoManager struct {
-	baseKey        string
-	expirationTime time.Duration
+	baseKey               string
+	expirationTime        time.Duration
+	recoverExpirationTime time.Duration
 }
 
 var (
@@ -28,14 +29,23 @@ var (
 // Paseto returns the singleton PasetoManager
 func Paseto() *PasetoManager {
 	once.Do(func() {
+
+		// Expiration time
 		expirationTime, err := time.ParseDuration(config.ENV().PASETO_EXPIRATION_TIME)
 		if err != nil {
 			expirationTime = 6 * time.Hour
 		}
 
+		// Recover expiration time
+		recoverExpirationTime, err := time.ParseDuration(config.ENV().PASETO_RECOVER_EXPIRATION_TIME)
+		if err != nil {
+			recoverExpirationTime = 5 * time.Minute
+		}
+
 		instance = &PasetoManager{
-			baseKey:        config.ENV().PASETO_SK,
-			expirationTime: expirationTime,
+			baseKey:               config.ENV().PASETO_SK,
+			expirationTime:        expirationTime,
+			recoverExpirationTime: recoverExpirationTime,
 		}
 	})
 	return instance
@@ -51,9 +61,7 @@ func (p *PasetoManager) GenerateToken(claims PasetoClaims) (string, *PasetoClaim
 	if claims.ExpiresAt.IsZero() {
 		claims.ExpiresAt = time.Now().Add(p.expirationTime)
 	}
-	if claims.IssuedAt.IsZero() {
-		claims.IssuedAt = time.Now()
-	}
+	claims.IssuedAt = time.Now()
 
 	// Prepare JSONToken from paseto
 	jsonToken := paseto.JSONToken{
@@ -71,6 +79,37 @@ func (p *PasetoManager) GenerateToken(claims PasetoClaims) (string, *PasetoClaim
 	if claims.OwnerUsername != "" {
 		jsonToken.Set("ownerUsername", claims.OwnerUsername)
 	}
+
+	// Form the key (symmetricKey)
+	key := sha256.Sum256([]byte(p.baseKey))
+	symmetricKey := key[:]
+
+	// Encrypt
+	token, err := paseto.NewV2().Encrypt(symmetricKey, jsonToken, nil)
+	if err != nil {
+		return "", nil, errors.New("error generating token")
+	}
+
+	return token, &claims, nil
+}
+
+// GenerateRecoverToken creates a new PASETO token for password recovery
+func (p *PasetoManager) GenerateRecoverToken(claims PasetoClaims) (string, *PasetoClaims, error) {
+	if claims.Username == "" {
+		return "", nil, errors.New("missing username in claims")
+	}
+
+	// Set expiration and issued times if not set
+	claims.ExpiresAt = time.Now().Add(p.recoverExpirationTime)
+	claims.IssuedAt = time.Now()
+
+	// Prepare JSONToken from paseto
+	jsonToken := paseto.JSONToken{
+		Subject:    claims.Username,
+		IssuedAt:   claims.IssuedAt,
+		Expiration: claims.ExpiresAt,
+	}
+	jsonToken.Set("roles", "recover")
 
 	// Form the key (symmetricKey)
 	key := sha256.Sum256([]byte(p.baseKey))
