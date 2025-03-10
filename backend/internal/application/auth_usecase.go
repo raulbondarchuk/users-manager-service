@@ -279,6 +279,7 @@ func (uc *AuthUseCase) ResetPassword(username, password string) error {
 	}
 
 	user.Password = &password
+	user.IsLogged = false
 
 	if err := uc.userRepo.Update(user); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
