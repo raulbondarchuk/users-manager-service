@@ -40,5 +40,5 @@ func http_init() {
 }
 
 func email_init() {
-	email.MustLoad()
+	email.Mail()
 }
