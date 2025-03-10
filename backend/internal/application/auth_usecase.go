@@ -10,7 +10,6 @@ import (
 	"app/internal/domain/user"
 	"app/internal/infrastructure/token/paseto"
 	"app/internal/infrastructure/token/refresh"
-	"app/pkg/config"
 	"app/pkg/errorsLib"
 )
 
@@ -238,7 +237,7 @@ func (uc *AuthUseCase) RefreshPairTokens(refreshTokenReq string) (string, string
 }
 
 // ForgotPassword sends a forgot password email to the user
-func (uc *AuthUseCase) ForgotPassword(username, subject, body string) (string, error) {
+func (uc *AuthUseCase) ForgotPassword(username, link, subject, body string) (string, error) {
 
 	user, err := uc.userRepo.GetByLogin(username)
 	if err != nil {
@@ -256,7 +255,6 @@ func (uc *AuthUseCase) ForgotPassword(username, subject, body string) (string, e
 		Username: user.Login,
 	})
 
-	link := config.ENV().MIDDLEWARE_RECOVER_LINK
 	link = fmt.Sprintf("%s?token=%s", link, recoverToken)
 	err = NewMailUseCase().SendEmailForgotPassword(user.Login, subject, body, link)
 	if err != nil {

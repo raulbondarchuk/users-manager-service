@@ -66,6 +66,7 @@ func (h *AuthHandler) RefreshPairTokens(c *gin.Context) {
 
 type forgotPasswordRequest struct {
 	Username string `json:"username" binding:"required"`
+	Link     string `json:"link" binding:"required"`
 	Subject  string `json:"subject" binding:"required"`
 	Body     string `json:"body" binding:"required"`
 }
@@ -78,7 +79,7 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 		return
 	}
 
-	link, err := h.authUC.ForgotPassword(req.Username, req.Subject, req.Body)
+	link, err := h.authUC.ForgotPassword(req.Username, req.Link, req.Subject, req.Body)
 	if err != nil {
 		if strings.Contains(err.Error(), "forbidden") {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
