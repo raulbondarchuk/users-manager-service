@@ -2,6 +2,7 @@ package composition
 
 import (
 	"app/internal/infrastructure/db"
+	"app/internal/infrastructure/transport/email"
 	http "app/internal/infrastructure/transport/http/server"
 	"app/pkg/config"
 
@@ -36,4 +37,8 @@ func db_init() {
 
 func http_init() {
 	http.MustLoad()
+}
+
+func email_init() {
+	email.MustLoad()
 }

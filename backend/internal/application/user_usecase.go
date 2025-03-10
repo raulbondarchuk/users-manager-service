@@ -109,12 +109,6 @@ func (uc *UserUseCase) RegisterCompanyUser(username, password, companyName strin
 		return nil, fmt.Errorf("company already exists")
 	}
 
-	// Create company
-	company, err := uc.internalCompanyRepo.CreateWithTransaction(tx, companyName)
-	if err != nil {
-		return nil, fmt.Errorf("error creating company: %w", err)
-	}
-
 	// Check if user already exists
 	existingUser, err := uc.repo.GetByLoginWithTransaction(tx, username)
 	if err == nil && existingUser != nil {
@@ -128,6 +122,12 @@ func (uc *UserUseCase) RegisterCompanyUser(username, password, companyName strin
 	}
 	if exists {
 		return nil, fmt.Errorf("company already exists")
+	}
+
+	// Create company
+	company, err := uc.internalCompanyRepo.CreateWithTransaction(tx, companyName)
+	if err != nil {
+		return nil, fmt.Errorf("error creating company: %w", err)
 	}
 
 	// Create new user

@@ -6,6 +6,7 @@ import (
 	"app/pkg/errorsLib"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -147,7 +148,11 @@ func (h *UserHandler) RegisterCompanyUser(c *gin.Context) {
 
 	user, err := h.userUC.RegisterCompanyUser(req.Username, req.Password, req.CompanyName)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if strings.Contains(err.Error(), "user already exists") {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 

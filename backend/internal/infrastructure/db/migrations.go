@@ -34,7 +34,7 @@ func (p *DBProvider) EnsureDatabase() error {
 
 	if count > 0 {
 		// 3a. If count>0, the database already exists
-		log.Printf("⚠️ Database '%s' was already found, creation skipped.", dbName)
+		log.Printf("✅ Database '%s' was already found, creation skipped.", dbName)
 		return nil
 	}
 

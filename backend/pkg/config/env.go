@@ -28,6 +28,13 @@ type Config struct {
 	PASETO_EXPIRATION_TIME  string `env:"PASETO_EXPIRATION_TIME,required"`
 	REFRESH_EXPIRATION_TIME string `env:"REFRESH_EXPIRATION_TIME,required"`
 
+	// SMTP
+	MAIL_SMTP_HOST     string `env:"MAIL_SMTP_HOST,required"`
+	MAIL_SMTP_PORT     string `env:"MAIL_SMTP_PORT,required"`
+	MAIL_SMTP_USERNAME string `env:"MAIL_SMTP_USERNAME,required"`
+	MAIL_SMTP_PASSWORD string `env:"MAIL_SMTP_PASSWORD,required"`
+	MAIL_SMTP_TLS      bool   `env:"MAIL_SMTP_TLS,required"`
+
 	// More fields if needed ...
 }
 
