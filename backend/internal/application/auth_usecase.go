@@ -281,6 +281,8 @@ func (uc *AuthUseCase) ResetPassword(username, password string) error {
 
 	user.Password = &password
 	user.IsLogged = false
+	user.Refresh = nil
+	user.RefreshExp = time.Now().Format("2006-01-02 15:04:05")
 
 	if err := uc.userRepo.Update(user); err != nil {
 		return fmt.Errorf("error updating user: %w", err)
