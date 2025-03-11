@@ -26,7 +26,7 @@ func Routes(router *gin.Engine) {
 
 		// Forgot password && reset password
 		group.POST("/forgot-password", handler.ForgotPassword)
-		group.POST("/reset-password", handler.ResetPassword)
+		group.POST("/reset-password", handler.ResetPasswordWithTokenRecover)
 
 	}
 }

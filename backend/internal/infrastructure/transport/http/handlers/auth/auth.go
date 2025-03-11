@@ -84,7 +84,11 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 		if strings.Contains(err.Error(), "forbidden") {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			if strings.Contains(err.Error(), "incorrect email format") {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			}
 		}
 		return
 	}
@@ -96,7 +100,7 @@ type resetPasswordRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (h *AuthHandler) ResetPassword(c *gin.Context) {
+func (h *AuthHandler) ResetPasswordWithTokenRecover(c *gin.Context) {
 
 	var req resetPasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

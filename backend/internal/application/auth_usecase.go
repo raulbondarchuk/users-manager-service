@@ -261,7 +261,7 @@ func (uc *AuthUseCase) ForgotPassword(username, link, subject, body string) (str
 	link = fmt.Sprintf("%s?token=%s", link, recoverToken)
 	err = NewMailUseCase().SendEmailForgotPassword(user.Login, subject, body, link)
 	if err != nil {
-		return "", fmt.Errorf("error sending email: %w", err)
+		return "", err
 	}
 
 	return link, nil

@@ -22,6 +22,9 @@ func (uc *MailUseCase) SendEmailForgotPassword(to, subject, body, link string) e
 
 	// Replace {link} with link
 	body = strings.ReplaceAll(body, "{link}", link)
+	if strings.Contains(body, "{username}") {
+		body = strings.ReplaceAll(body, "{username}", to)
+	}
 
 	// Send the email
 	return email.SendEmail(to, subject, body)
