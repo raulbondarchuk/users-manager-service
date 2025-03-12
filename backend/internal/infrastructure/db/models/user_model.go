@@ -100,17 +100,11 @@ func (u *UserModel) BeforeSave(tx *gorm.DB) (err error) {
 func (u *UserModel) AfterCreate(tx *gorm.DB) (err error) {
 	// Determine if the profile is primary and set the role if needed
 	isPrimary := u.OwnerID == nil
-	var role *string
-	if isPrimary {
-		defaultRole := "Company"
-		role = &defaultRole
-	}
 
 	// Create a profile
 	prof := ProfileModel{
 		UserID:    u.ID,
 		IsPrimary: isPrimary,
-		Role:      role,
 	}
 
 	if err := tx.Create(&prof).Error; err != nil {

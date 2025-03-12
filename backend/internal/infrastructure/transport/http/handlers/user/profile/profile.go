@@ -22,7 +22,6 @@ type ProfileRequest struct {
 	Surname *string `json:"surname"`
 	Email   *string `json:"email"`
 	Phone   *string `json:"phone"`
-	Role    *string `json:"role"`
 	Photo   *string `json:"photo"`
 }
 
@@ -67,7 +66,6 @@ func (h *ProfileHandler) updateProfile(c *gin.Context, username string) {
 		Surname: profile.Surname,
 		Email:   profile.Email,
 		Phone:   profile.Phone,
-		Role:    profile.Role,
 		Photo:   profile.Photo,
 	}
 

@@ -12,7 +12,6 @@ type ProfileModel struct {
 	Surname   *string `gorm:"size:255,default:null;column:surname"`
 	Email     *string `gorm:"size:255,default:null;column:email"`
 	Phone     *string `gorm:"size:255,default:null;column:phone"`
-	Role      *string `gorm:"size:255,default:null;column:role"`
 	Photo     *string `gorm:"size:255,default:null;column:photo"`
 
 	// GORM 1:1 connection
@@ -32,7 +31,6 @@ func (pm *ProfileModel) ToDomain() *user.Profile {
 		Surname:   pm.Surname,
 		Email:     pm.Email,
 		Phone:     pm.Phone,
-		Role:      pm.Role,
 		Photo:     pm.Photo,
 	}
 }

@@ -148,8 +148,7 @@ func (r *userRepository) UploadProfileTransaction(userId uint, profile *user.Pro
 			"surname": utils.StringOrNil(profile.Surname),
 			"email":   utils.StringOrNil(profile.Email),
 			"phone":   utils.StringOrNil(profile.Phone),
-			"role":    utils.StringOrNil(profile.Role),
-			// "photo":   utils.StringOrNil(profile.Photo), // Uncomment if photo is a string
+			// "photo":   utils.StringOrNil(profile.Photo), // Future implementation
 		}
 
 		// Update the profile fields

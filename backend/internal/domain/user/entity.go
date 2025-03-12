@@ -59,6 +59,5 @@ type Profile struct {
 	Surname   *string `json:"surname"`
 	Email     *string `json:"email"`
 	Phone     *string `json:"phone"`
-	Role      *string `json:"role"`
 	Photo     *string `json:"photo"` // link to photo (logo of profile)
 }
