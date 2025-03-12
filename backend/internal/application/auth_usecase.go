@@ -108,12 +108,21 @@ func (uc *AuthUseCase) Login(login, password string) (*user.User, error) {
 		}
 	}
 
+	// Check if user is active
+	if !usr.Active {
+		return nil, errorsLib.ErrForbidden
+	}
+
 	// 4. Check if `OwnerID` exists, if yes, get owner
 	var ownerUsername string
 	if usr.OwnerID != nil {
 		ownerUser, err := uc.userRepo.GetByID(*usr.OwnerID)
 		if err == nil {
 			ownerUsername = ownerUser.Login
+			// Check if owner is active
+			if !ownerUser.Active {
+				return nil, errorsLib.ErrForbidden
+			}
 		}
 	}
 

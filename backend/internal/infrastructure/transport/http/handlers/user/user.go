@@ -107,17 +107,23 @@ func (h *UserHandler) GetUserAndSubUsersByOwnerUsername(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"company": mainUser, "subusers": subUsers})
 }
 
-func (h *UserHandler) ActivateDeactivateUser(c *gin.Context) {
-	username := c.Query("username")
-	active := c.Query("active")
+type activateDeactivateUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Active   bool   `json:"active"`
+}
 
-	activeBool, err := strconv.ParseBool(active)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid active value"})
+// TODO 2025/03/12 16:57:23 migration error: autoMigrate error: Error 1061 (42000): Duplicate key name 'idx_users_uuid'
+// exit status 1
+
+func (h *UserHandler) ActivateDeactivateUser(c *gin.Context) {
+
+	var req activateDeactivateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = h.userUC.ActivateDeactivateUser(username, activeBool)
+	err := h.userUC.ActivateDeactivateUser(req.Username, req.Active)
 	if err != nil {
 		if h.userUC.GetRepo().IsNotFoundError(err) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
@@ -126,7 +132,8 @@ func (h *UserHandler) ActivateDeactivateUser(c *gin.Context) {
 		}
 		return
 	}
-	if activeBool {
+
+	if req.Active {
 		c.JSON(http.StatusOK, gin.H{"message": "User activated"})
 	} else {
 		c.JSON(http.StatusOK, gin.H{"message": "User deactivated"})
