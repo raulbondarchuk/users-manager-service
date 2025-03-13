@@ -25,8 +25,9 @@ func Routes(router *gin.Engine) {
 	{
 		// // Get all providers
 		// group.GET("/all", handler.GetAllProviders)
-		group.POST("/register", handler.RegisterCompanyUser) // Register company user
-		group.POST("/subuser", subUserHandler.CreateSubUser) // Create subuser
+		group.POST("/register", handler.RegisterCompanyUser)        // Register company user
+		group.POST("/subuser", subUserHandler.CreateSubUser)        // Create subuser
+		group.POST("/subuser/delete", subUserHandler.DeleteSubuser) // Delete subuser
 
 		group.GET("/all", handler.GetUserAndSubUsersByOwnerUsername) // Get user and subusers by owner username
 		group.GET("/by-id", handler.GetUserByID)                     // Get user by ID

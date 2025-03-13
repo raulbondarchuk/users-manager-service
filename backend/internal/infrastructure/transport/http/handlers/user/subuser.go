@@ -2,6 +2,7 @@ package user
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 
 	"app/internal/application"
@@ -62,4 +63,33 @@ func (h *SubUserHandler) CreateSubUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, subUser)
+}
+
+func (h *SubUserHandler) DeleteSubuser(c *gin.Context) {
+
+	claims, err := paseto.Paseto().ValidateToken(c.GetHeader("Authorization"))
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		return
+	}
+
+	username := c.Query("username")
+	if username == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username of user is required"})
+		return
+	}
+
+	// Decode the username if it is URL-encoded
+	decodedUsername, err := url.QueryUnescape(username)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username format"})
+		return
+	}
+
+	status, err := h.subUserUseCase.DeleteSubuser(decodedUsername, uint(claims.CompanyID))
+	if err != nil {
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(status, gin.H{"message": "Subuser deleted successfully"})
 }

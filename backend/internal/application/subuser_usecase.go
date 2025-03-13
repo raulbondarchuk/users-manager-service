@@ -5,6 +5,7 @@ import (
 	"app/internal/domain/role"
 	"app/internal/domain/user"
 	"fmt"
+	"net/http"
 	"time"
 )
 
@@ -119,4 +120,21 @@ func (uc *SubUserUseCase) CreateSubUser(mainUsername, subUsername, subPassword, 
 	}
 
 	return subUser, nil
+}
+
+func (uc *SubUserUseCase) DeleteSubuser(username string, companyId uint) (int, error) {
+
+	user, err := uc.userRepo.GetByLogin(username)
+	if err != nil {
+		if uc.userRepo.IsNotFoundError(err) {
+			return http.StatusNotFound, err
+		}
+		return http.StatusInternalServerError, err
+	}
+
+	if user.CompanyID != companyId || user.OwnerID == nil {
+		return http.StatusNotFound, fmt.Errorf("user is not a subuser of this company")
+	}
+
+	return http.StatusOK, uc.userRepo.DeleteUserByUsername(username)
 }

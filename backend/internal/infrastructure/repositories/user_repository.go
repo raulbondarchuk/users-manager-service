@@ -186,3 +186,7 @@ func (r *userRepository) UpdateRefreshToken(u *user.User) error {
 		"refreshExp": u.RefreshExp,
 	}).Error
 }
+
+func (r *userRepository) DeleteUserByUsername(username string) error {
+	return r.db.Where("login = ?", username).Delete(&models.UserModel{}).Error
+}
